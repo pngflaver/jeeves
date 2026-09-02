@@ -3,18 +3,35 @@ import json
 import time
 import logging
 import socket
+import re
 import psutil
 from datetime import datetime, timezone, timedelta
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+# Heuristics for classifying search/query nature
+TOPIC_PATTERNS = {
+    "Hardware & Specs (EOL/EOS)": re.compile(r"\b(fortigate|fortinet|cisco|juniper|palo alto|switch|router|firewall|eol|eos|datasheet|throughput|port|hardware|model)\b", re.IGNORECASE),
+    "Software & Upgrades": re.compile(r"\b(upgrade|firmware|fortios|esxi|vmware|ubuntu|debian|rhel|windows server|version|patch|release|eoes)\b", re.IGNORECASE),
+    "Security & CVE Advisories": re.compile(r"\b(cve|vulnerability|exploit|security|advisory|mitigation|cvss|threat|patch)\b", re.IGNORECASE),
+    "Network Diagnostics": re.compile(r"\b(ping|traceroute|dns|dig|nmap|portscan|whois|http|curl|ssl|cert|ipinfo|latency|packet)\b", re.IGNORECASE),
+    "Media & Streaming": re.compile(r"\b(movie|tv|series|episode|season|imdb|tmdb|actor|starring|film|show)\b", re.IGNORECASE),
+    "Aviation & Flights": re.compile(r"\b(flight|airline|fly|airport|pom|bne|syd|cns|schedule|transit|route)\b", re.IGNORECASE),
+    "General IT & Dev": re.compile(r"\b(python|docker|kubernetes|linux|bash|script|git|api|database|sql|cloud)\b", re.IGNORECASE),
+    "Bot Identity / VIP": re.compile(r"\b(flavius|creator|who are you|who made you|jeeves|boss)\b", re.IGNORECASE),
+}
+
 class KPIService:
     """
-    Backend KPI and Metrics Engine for Jeeves.
-    Tracks command execution, AI latencies, error rates, user growth, and system load.
-    Generates data/kpis.json and human-readable ASCII data/kpis.txt for instant 'cat' inspection.
+    Comprehensive Backend KPI & Analytics Engine for Jeeves.
+    Tracks:
+    - Host & Bot process resource utilization
+    - Multi-window traffic & interaction counters
+    - Top active users with behavioral archetypes
+    - Nature of searches and thematic query distribution
+    - AI latency and command reliability metrics
     """
 
     def __init__(self, data_dir: Optional[Path] = None):
@@ -24,7 +41,6 @@ class KPIService:
         self.start_time = time.time()
         self.start_iso = datetime.now(timezone.utc).isoformat()
         
-        # In-memory session tracking
         self.session_events = []
         self.lifetime_data = self._load_json()
 
@@ -46,6 +62,8 @@ class KPIService:
             "ai_latency_total_ms": 0.0,
             "ai_latency_count": 0,
             "command_counts": {},
+            "search_categories": {},
+            "recent_search_topics": [],
             "recent_events": []  # Rolling 24h events
         }
 
@@ -58,12 +76,35 @@ class KPIService:
         except Exception as e:
             logger.error(f"Error saving KPI JSON to {self.json_file}: {e}")
 
+    def _classify_nature_of_query(self, text: str) -> str:
+        """Classify query text into primary search nature/category."""
+        for category, pattern in TOPIC_PATTERNS.items():
+            if pattern.search(text):
+                return category
+        return "General Knowledge & Chat"
+
     def record_command(self, command_name: str, user_id: Optional[int] = None, success: bool = True, duration_ms: float = 0.0) -> None:
         """Record an executed command."""
         now_ts = time.time()
+        
+        # Categorize command
+        if command_name in ["ping", "traceroute", "dns", "nmap", "whois", "http", "ssl", "ipinfo"]:
+            cat = "Network Diagnostics"
+        elif command_name in ["movie", "tv"]:
+            cat = "Media & Streaming"
+        elif command_name in ["flight"]:
+            cat = "Aviation & Flights"
+        elif command_name in ["hardware", "sync_hardware"]:
+            cat = "Hardware & Specs (EOL/EOS)"
+        elif command_name in ["software", "sync_software"]:
+            cat = "Software & Upgrades"
+        else:
+            cat = "Bot Commands & Info"
+
         event = {
             "type": "command",
             "name": command_name,
+            "category": cat,
             "user_id": user_id,
             "success": success,
             "duration_ms": round(duration_ms, 2),
@@ -81,20 +122,26 @@ class KPIService:
         cmds = self.lifetime_data.setdefault("command_counts", {})
         cmds[command_name] = cmds.get(command_name, 0) + 1
         
-        # Append to recent rolling events
+        cats = self.lifetime_data.setdefault("search_categories", {})
+        cats[cat] = cats.get(cat, 0) + 1
+        
         recent = self.lifetime_data.setdefault("recent_events", [])
         recent.append(event)
         self._trim_events()
         
         self.export_kpi_files()
 
-    def record_ai_query(self, user_id: Optional[int], prompt_length: int, duration_ms: float, success: bool = True, source: str = "ollama") -> None:
-        """Record an AI LLM query with response latency."""
+    def record_ai_query(self, user_id: Optional[int], prompt: str, duration_ms: float, success: bool = True, source: str = "ollama") -> None:
+        """Record an AI LLM query with topic classification and response latency."""
         now_ts = time.time()
+        category = self._classify_nature_of_query(prompt)
+        
         event = {
             "type": "ai_query",
+            "category": category,
+            "prompt_snippet": prompt[:60].strip(),
             "user_id": user_id,
-            "prompt_length": prompt_length,
+            "prompt_length": len(prompt),
             "duration_ms": round(duration_ms, 2),
             "success": success,
             "source": source,
@@ -110,6 +157,17 @@ class KPIService:
         if not success:
             self.lifetime_data["total_errors"] = self.lifetime_data.get("total_errors", 0) + 1
             
+        cats = self.lifetime_data.setdefault("search_categories", {})
+        cats[category] = cats.get(category, 0) + 1
+        
+        # Track recent search query topics
+        topics = self.lifetime_data.setdefault("recent_search_topics", [])
+        clean_snip = prompt.replace("\n", " ").strip()
+        if clean_snip and clean_snip not in topics:
+            topics.append(clean_snip[:50])
+            if len(topics) > 15:
+                self.lifetime_data["recent_search_topics"] = topics[-15:]
+        
         recent = self.lifetime_data.setdefault("recent_events", [])
         recent.append(event)
         self._trim_events()
@@ -157,8 +215,46 @@ class KPIService:
         parts.append(f"{minutes}m {secs}s")
         return " ".join(parts)
 
+    def _get_top_users_data(self, limit: int = 5) -> List[Dict[str, Any]]:
+        """Extract and rank top users from user profiles."""
+        user_profiles_path = self.base_dir / "user_profiles.json"
+        if not user_profiles_path.exists():
+            return []
+        
+        try:
+            with open(user_profiles_path, "r", encoding="utf-8") as f:
+                profiles = json.load(f)
+        except Exception:
+            return []
+
+        ranked = []
+        for u_id, p in profiles.items():
+            ass = p.get("assessment", {})
+            traits = ass.get("traits", [])
+            topics = ass.get("topics", [])
+            primary_topic = topics[0] if topics else (traits[0] if traits else "General")
+            
+            username = p.get("username", "")
+            display_name = f"@{username}" if username and username != "No Username" else (p.get("full_name") or f"ID:{u_id}")
+            
+            ranked.append({
+                "user_id": u_id,
+                "display_name": display_name,
+                "full_name": p.get("full_name", "Unknown"),
+                "total_messages": p.get("total_messages", 0),
+                "technical_messages": p.get("technical_message_count", 0),
+                "rude_messages": p.get("rude_message_count", 0),
+                "archetype": ass.get("archetype", "Standard Member"),
+                "tone": ass.get("tone", "Neutral"),
+                "primary_topic": primary_topic,
+                "last_seen": p.get("last_seen", "")
+            })
+        
+        ranked.sort(key=lambda x: x["total_messages"], reverse=True)
+        return ranked[:limit]
+
     def generate_dashboard_text(self) -> str:
-        """Generate human-readable ASCII table dashboard for 'cat' viewing."""
+        """Generate comprehensive human-readable ASCII table dashboard for 'cat' viewing."""
         now = datetime.now(timezone.utc)
         now_str = now.strftime("%Y-%m-%d %H:%M:%S UTC")
         uptime_sec = time.time() - self.start_time
@@ -187,62 +283,82 @@ class KPIService:
         d_ai_latencies = [e["duration_ms"] for e in recent if e.get("type") == "ai_query" and "duration_ms" in e]
         d_avg_latency = (sum(d_ai_latencies) / len(d_ai_latencies) / 1000.0) if d_ai_latencies else avg_latency
         
-        # Read user profile stats
-        user_profiles_path = self.base_dir / "user_profiles.json"
-        total_tracked_users = 0
-        rude_count = 0
-        tech_count = 0
-        if user_profiles_path.exists():
-            try:
-                with open(user_profiles_path, "r", encoding="utf-8") as f:
-                    u_data = json.load(f)
-                    total_tracked_users = len(u_data)
-                    for u in u_data.values():
-                        if u.get("rude_message_count", 0) > 0:
-                            rude_count += 1
-                        if u.get("technical_message_count", 0) > 0:
-                            tech_count += 1
-            except Exception:
-                pass
+        # Read top users
+        top_users = self._get_top_users_data(limit=5)
+        
+        # Nature of searches
+        categories = self.lifetime_data.get("search_categories", {})
+        total_cats = sum(categories.values()) or 1
+        sorted_cats = sorted(categories.items(), key=lambda x: x[1], reverse=True)
+        
+        # Recent search topics
+        recent_topics = self.lifetime_data.get("recent_search_topics", [])[-6:]
 
         # Command breakdown
         cmd_counts = self.lifetime_data.get("command_counts", {})
-        top_cmds = sorted(cmd_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+        top_cmds = sorted(cmd_counts.items(), key=lambda x: x[1], reverse=True)[:6]
 
-        W = 68
+        W = 72
         lines = []
         lines.append("╔" + "═" * (W - 2) + "╗")
-        lines.append("║" + " 🤖 JEEVES OPERATIONAL & PERFORMANCE KPI DASHBOARD ".center(W - 2) + "║")
+        lines.append("║" + " 🤖 JEEVES OPERATIONAL, USER & SEARCH ANALYTICS KPI DASHBOARD ".center(W - 2) + "║")
         lines.append("║" + f" Generated: {now_str} ".center(W - 2) + "║")
         lines.append("╠" + "═" * (W - 2) + "╣")
         
         # Section 1: Service & System Health
         lines.append("║ 🟢 SERVICE & HOST HEALTH" + " " * (W - 27) + "║")
-        lines.append(f"║ • Service Uptime:      {uptime_str:<18} Hostname: {socket.gethostname()[:15]:<16} ║")
-        lines.append(f"║ • Host CPU Usage:      {sys_m['host_cpu_percent']:>5.1f}%             Bot Process CPU: {sys_m['bot_cpu_percent']:>5.1f}%   ║")
-        lines.append(f"║ • System RAM Used:     {sys_m['system_memory_used_gb']} / {sys_m['system_memory_total_gb']} GB ({sys_m['system_memory_percent']}%)   Bot Memory: {sys_m['bot_memory_mb']:>6.1f} MB ║")
-        lines.append(f"║ • Disk Usage (Root):   {sys_m['disk_used_gb']} / {sys_m['disk_total_gb']} GB ({sys_m['disk_percent']}%)   Load Avg:   {sys_m['load_avg']:<14} ║")
+        lines.append(f"║ • Service Uptime:      {uptime_str:<18} Hostname: {socket.gethostname()[:18]:<19} ║")
+        lines.append(f"║ • Host CPU Usage:      {sys_m['host_cpu_percent']:>5.1f}%             Bot Process CPU: {sys_m['bot_cpu_percent']:>5.1f}%     ║")
+        lines.append(f"║ • System RAM Used:     {sys_m['system_memory_used_gb']} / {sys_m['system_memory_total_gb']} GB ({sys_m['system_memory_percent']}%)   Bot Memory: {sys_m['bot_memory_mb']:>6.1f} MB   ║")
+        lines.append(f"║ • Disk Usage (Root):   {sys_m['disk_used_gb']} / {sys_m['disk_total_gb']} GB ({sys_m['disk_percent']}%)   Load Avg:   {sys_m['load_avg']:<17} ║")
         lines.append("╠" + "═" * (W - 2) + "╣")
         
         # Section 2: Traffic & Multi-Window Activity
         lines.append("║ 📊 MULTI-WINDOW TRAFFIC METRICS" + " " * (W - 34) + "║")
-        lines.append(f"║ Metric                     Last 24 Hours     Session         Lifetime      ║")
-        lines.append("║ ─────────────────────────  ────────────────  ──────────────  ───────────── ║")
-        lines.append(f"║ Total Interactions:        {d_interactions:<16}  {len(self.session_events):<14}  {lt_interactions:<11} ║")
-        lines.append(f"║ Diagnostic Commands:       {d_cmds:<16}  {sum(1 for e in self.session_events if e.get('type')=='command'):<14}  {lt_cmds:<11} ║")
-        lines.append(f"║ AI / LLM Queries:          {d_ai:<16}  {sum(1 for e in self.session_events if e.get('type')=='ai_query'):<14}  {lt_ai:<11} ║")
-        lines.append(f"║ Total Errors / Faults:     {d_errors:<16}  {sum(1 for e in self.session_events if not e.get('success',True)):<14}  {lt_errors:<11} ║")
+        lines.append(f"║ Metric                     Last 24 Hours     Session         Lifetime        ║")
+        lines.append("║ ─────────────────────────  ────────────────  ──────────────  ─────────────── ║")
+        lines.append(f"║ Total Interactions:        {d_interactions:<16}  {len(self.session_events):<14}  {lt_interactions:<13} ║")
+        lines.append(f"║ Diagnostic Commands:       {d_cmds:<16}  {sum(1 for e in self.session_events if e.get('type')=='command'):<14}  {lt_cmds:<13} ║")
+        lines.append(f"║ AI / LLM Queries:          {d_ai:<16}  {sum(1 for e in self.session_events if e.get('type')=='ai_query'):<14}  {lt_ai:<13} ║")
+        lines.append(f"║ Total Errors / Faults:     {d_errors:<16}  {sum(1 for e in self.session_events if not e.get('success',True)):<14}  {lt_errors:<13} ║")
+        lines.append(f"║ Avg LLM Response Time:     {d_avg_latency:>5.2f}s           {avg_latency:>5.2f}s           {avg_latency:>5.2f}s          ║")
+        lines.append(f"║ Reliability / Success:     {lt_success_rate:>5.1f}%           {lt_success_rate:>5.1f}%           {lt_success_rate:>5.1f}%          ║")
         lines.append("╠" + "═" * (W - 2) + "╣")
 
-        # Section 3: AI Inference & Reliability
-        lines.append("║ 🧠 AI PERFORMANCE & RELIABILITY" + " " * (W - 34) + "║")
-        lines.append(f"║ • Avg LLM Response Time:   {d_avg_latency:>5.2f}s (24h)   /   {avg_latency:>5.2f}s (Lifetime)          ║")
-        lines.append(f"║ • Execution Reliability:   {lt_success_rate:>5.1f}% Success Rate ({lt_errors} lifetime errors)       ║")
-        lines.append(f"║ • Active Tracked Users:    {total_tracked_users:<5} (Tech: {tech_count}, Flagged/Rude: {rude_count})         ║")
+        # Section 3: Nature of Searches & Query Distribution
+        lines.append("║ 🔍 NATURE OF SEARCHES & THEMATIC BREAKDOWN" + " " * (W - 45) + "║")
+        if sorted_cats:
+            for cat_name, cnt in sorted_cats:
+                pct = (cnt / total_cats) * 100.0
+                bar_len = int(pct / 5)
+                bar = "█" * bar_len + "░" * (20 - bar_len)
+                lines.append(f"║ • {cat_name:<28} [{bar}] {cnt:>3} ({pct:>5.1f}%) ║")
+        else:
+            lines.append("║ • No thematic searches classified yet.                               ║")
+        
+        if recent_topics:
+            lines.append("║                                                                      ║")
+            lines.append("║ 📌 Recent / Trending Search Inquiries:                                ║")
+            for t in recent_topics:
+                lines.append(f"║   ↳ \"{t[:64]}\"{' ' * max(0, 64 - len(t))} ║")
         lines.append("╠" + "═" * (W - 2) + "╣")
 
-        # Section 4: Top Commands Breakdown
-        lines.append("║ 🛠️ COMMAND FREQUENCY BREAKDOWN (TOP 8)" + " " * (W - 41) + "║")
+        # Section 4: Top Users & Behavioral Analytics
+        lines.append("║ 👥 TOP ACTIVE USERS & PARTICIPATION" + " " * (W - 38) + "║")
+        lines.append("║ User                     Msgs  Archetype              Focus Area     ║")
+        lines.append("║ ───────────────────────  ────  ─────────────────────  ────────────── ║")
+        if top_users:
+            for u in top_users:
+                d_name = u['display_name'][:23]
+                arch = u['archetype'][:21]
+                foc = u['primary_topic'][:14]
+                lines.append(f"║ {d_name:<23}  {u['total_messages']:>4}  {arch:<21}  {foc:<14} ║")
+        else:
+            lines.append("║ No user interactions recorded yet.                                   ║")
+        lines.append("╠" + "═" * (W - 2) + "╣")
+
+        # Section 5: Top Diagnostic Commands
+        lines.append("║ 🛠️ COMMAND FREQUENCY BREAKDOWN" + " " * (W - 33) + "║")
         if top_cmds:
             for i in range(0, len(top_cmds), 2):
                 c1 = top_cmds[i]
@@ -251,19 +367,25 @@ class KPIService:
                 if i + 1 < len(top_cmds):
                     c2 = top_cmds[i+1]
                     col2 = f"• {c2[0]}: {c2[1]} runs"
-                lines.append(f"║ {col1:<31} {col2:<32} ║")
+                lines.append(f"║ {col1:<33} {col2:<34} ║")
         else:
-            lines.append("║ • No commands recorded yet.                                        ║")
+            lines.append("║ • No commands recorded yet.                                          ║")
 
         lines.append("╚" + "═" * (W - 2) + "╝")
-        lines.append("💡 Quick commands: 'cat data/kpis.txt' | 'cat data/kpis.json' | './kpi'")
+        lines.append("💡 Quick commands: 'cat /root/kpis.txt' | 'cat data/kpis.json' | 'kpi'")
         return "\n".join(lines) + "\n"
 
     def export_kpi_files(self) -> None:
         """Write out both kpis.json and formatted kpis.txt to disk."""
         try:
             self.base_dir.mkdir(parents=True, exist_ok=True)
-            self._save_json(self.lifetime_data)
+            
+            # Enrich json with top users and search breakdown
+            export_payload = dict(self.lifetime_data)
+            export_payload["top_users"] = self._get_top_users_data(limit=10)
+            export_payload["system_metrics"] = self._get_system_metrics()
+            
+            self._save_json(export_payload)
             dashboard_text = self.generate_dashboard_text()
             with open(self.txt_file, "w", encoding="utf-8") as f:
                 f.write(dashboard_text)

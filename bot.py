@@ -635,7 +635,7 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         ai_duration_ms = (time.time() - t_ai_start) * 1000.0
         kpi_service.record_ai_query(
             user_id=user.id if user else None,
-            prompt_length=len(prompt),
+            prompt=prompt,
             duration_ms=ai_duration_ms,
             success=ai_success
         )
