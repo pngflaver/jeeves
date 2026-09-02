@@ -1,6 +1,7 @@
 import logging
 import re
 import sys
+import asyncio
 from telegram import Update, constants
 from telegram.ext import (
     Application,
@@ -408,42 +409,73 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         )
         return
 
-    await context.bot.send_chat_action(chat_id=chat_id, action=constants.ChatAction.TYPING)
+async def _keep_typing(bot, chat_id: int, stop_event: asyncio.Event) -> None:
+    """Continuously send typing action to Telegram while LLM is generating."""
+    while not stop_event.is_set():
+        try:
+            await bot.send_chat_action(chat_id=chat_id, action=constants.ChatAction.TYPING)
+        except Exception:
+            pass
+        try:
+            await asyncio.wait_for(stop_event.wait(), timeout=4.0)
+        except asyncio.TimeoutError:
+            pass
+
+async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, prompt: str, context_msgs=None) -> None:
+    """Send typing indicator, analyze technical intent/make/model, search/cache specs, and call LLM."""
+    chat_id = update.effective_chat.id
+    message = update.effective_message
+
+    # Intercept queries regarding Drake immediately
+    if check_drake_query(prompt):
+        logger.info(f"Intercepted Drake query from chat {chat_id}: '{prompt}'")
+        await message.reply_text(
+            "Drake is gay... like the person asking this question.",
+            reply_to_message_id=message.message_id
+        )
+        return
+
+    stop_typing_event = asyncio.Event()
+    typing_task = asyncio.create_task(_keep_typing(context.bot, chat_id, stop_typing_event))
 
     logger.info(f"User in chat {chat_id} asked AI: '{prompt[:60]}...'")
 
-    search_results = None
-    wiki_info = None
-
-    # 1. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
-    intent, search_results = await technical_service.get_technical_context(prompt)
-    if search_results:
-        logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
-    else:
-        # Fallback to Wikipedia if web search yielded nothing
-        wiki_info = await search_wikipedia(prompt)
-        if wiki_info:
-            logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
-
-    response_text = await llm.generate_response(
-        prompt,
-        context_messages=context_msgs,
-        wiki_info=wiki_info,
-        search_results=search_results
-    )
-
     try:
-        await message.reply_text(
-            response_text,
-            reply_to_message_id=message.message_id,
-            parse_mode=constants.ParseMode.MARKDOWN
+        search_results = None
+        wiki_info = None
+
+        # 1. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
+        intent, search_results = await technical_service.get_technical_context(prompt)
+        if search_results:
+            logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
+        else:
+            # Fallback to Wikipedia if web search yielded nothing
+            wiki_info = await search_wikipedia(prompt)
+            if wiki_info:
+                logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
+
+        response_text = await llm.generate_response(
+            prompt,
+            context_messages=context_msgs,
+            wiki_info=wiki_info,
+            search_results=search_results
         )
-    except Exception as md_err:
-        logger.warning(f"Markdown formatting failed ({md_err}), sending as plain text.")
-        await message.reply_text(
-            response_text,
-            reply_to_message_id=message.message_id
-        )
+
+        try:
+            await message.reply_text(
+                response_text,
+                reply_to_message_id=message.message_id,
+                parse_mode=constants.ParseMode.MARKDOWN
+            )
+        except Exception as md_err:
+            logger.warning(f"Markdown formatting failed ({md_err}), sending as plain text.")
+            await message.reply_text(
+                response_text,
+                reply_to_message_id=message.message_id
+            )
+    finally:
+        stop_typing_event.set()
+        typing_task.cancel()
 
 def main() -> None:
     """Start the bot."""
