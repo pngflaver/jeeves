@@ -18,6 +18,7 @@ from services.hardware_service import hardware_service
 from services.software_service import software_service
 from services.technical_service import technical_service
 from services.persona_service import persona_service
+from services.flight_service import flight_service
 from services import network_tools
 
 # Configure logging
@@ -52,6 +53,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"👋 Hi! I am your Technical AI assistant & Network Diagnostics bot.\n\n"
         f"🤖 **Technical & AI Knowledge (Web Search + HW/SW Lifecycle):**\n"
         f"• `/ask <question>` — Ask technical, CLI, CVE, hardware, or software questions\n"
+        f"• `/flight <from> <to>` — Search flight routes & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `@{bot_user.username} <question>` — Mention in group chats\n"
         f"• `/hardware` — View tracked hardware inventory list\n"
         f"• `/software` — View tracked software & OS version list\n"
@@ -80,6 +82,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"📖 **Command Reference:**\n\n"
         f"🧠 **AI & Technical Knowledge:**\n"
         f"• `/ask <prompt>` — Ask hardware/software EOL, CLI configs, CVEs, or general IT questions\n"
+        f"• `/flight <orig> <dest>` — Flight schedules & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `@{bot_user.username} <prompt>` — Mention in group chats\n"
         f"• `/hardware` — List tracked hardware devices from `{config.HARDWARE_CONFIG_FILE}`\n"
         f"• `/software` — List tracked software/OS versions from `{config.SOFTWARE_CONFIG_FILE}`\n"
@@ -213,6 +216,27 @@ async def model_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"Host: `{config.OLLAMA_HOST}`"
     )
     await update.effective_message.reply_text(msg, parse_mode=constants.ParseMode.MARKDOWN)
+
+async def flight_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /flight <origin> <destination> command."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    query = " ".join(context.args).strip()
+    if not query:
+        await update.effective_message.reply_text(
+            "✈️ **Flight Lookup Usage:**\n"
+            "• `/flight POM BNE` — Port Moresby to Brisbane\n"
+            "• `/flight POM SYD` — Port Moresby to Sydney\n"
+            "• `/flight POM CNS` — Port Moresby to Cairns\n"
+            "• `/flight Port Moresby to Singapore`\n\n"
+            "Provides operating airlines, direct schedules, flight times, and live booking/tracking links.",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    flight_query = f"flights from {query}" if "to" in query or len(context.args) >= 2 else f"flight {query}"
+    await process_and_reply(update, context, flight_query)
 
 # ==========================================
 # Network Diagnostic Commands
@@ -445,25 +469,30 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         search_results = None
         wiki_info = None
 
-        # 1. Check for Flavius VIP or Personal Identity inquiries
-        persona_intent = persona_service.classify_persona_intent(prompt)
-        if persona_intent == "FLAVIUS_VIP":
-            logger.info(f"Identified Flavius VIP inquiry from chat {chat_id}: '{prompt}'")
-            search_results = [persona_service.get_flavius_context()]
-        elif persona_intent == "PERSONAL_IDENTITY":
-            logger.info(f"Identified personal identity query from chat {chat_id}: '{prompt}'")
-            # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
-            wiki_info = await search_wikipedia(prompt)
+        # 1. Check for Flight & Travel inquiries
+        if flight_service.is_flight_query(prompt):
+            logger.info(f"Identified flight schedule inquiry from chat {chat_id}: '{prompt}'")
+            has_flight, search_results = await flight_service.get_flight_context(prompt)
         else:
-            # 2. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
-            intent, search_results = await technical_service.get_technical_context(prompt)
-            if search_results:
-                logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
-            else:
-                # Fallback to Wikipedia if web search yielded nothing
+            # 2. Check for Flavius VIP or Personal Identity inquiries
+            persona_intent = persona_service.classify_persona_intent(prompt)
+            if persona_intent == "FLAVIUS_VIP":
+                logger.info(f"Identified Flavius VIP inquiry from chat {chat_id}: '{prompt}'")
+                search_results = [persona_service.get_flavius_context()]
+            elif persona_intent == "PERSONAL_IDENTITY":
+                logger.info(f"Identified personal identity query from chat {chat_id}: '{prompt}'")
+                # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
                 wiki_info = await search_wikipedia(prompt)
-                if wiki_info:
-                    logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
+            else:
+                # 3. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
+                intent, search_results = await technical_service.get_technical_context(prompt)
+                if search_results:
+                    logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
+                else:
+                    # Fallback to Wikipedia if web search yielded nothing
+                    wiki_info = await search_wikipedia(prompt)
+                    if wiki_info:
+                        logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
 
         response_text = await llm.generate_response(
             prompt,
@@ -502,6 +531,7 @@ def main() -> None:
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("model", model_command))
     app.add_handler(CommandHandler("ask", ask_command))
+    app.add_handler(CommandHandler(["flight", "flights"], flight_command))
     app.add_handler(CommandHandler("hardware", hardware_command))
     app.add_handler(CommandHandler(["sync_hardware", "synchardware"], sync_hardware_command))
     app.add_handler(CommandHandler("software", software_command))
