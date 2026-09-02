@@ -5,7 +5,7 @@ import logging
 import asyncio
 from typing import Dict, Optional, Tuple, List
 import config
-from search_service import search_web
+from .search_service import search_web
 
 logger = logging.getLogger(__name__)
 

@@ -108,6 +108,44 @@ Executes live terminal diagnostics safely on the host server and formats results
 
 ### 6. ⚙️ HOW does it work?
 
+#### Architecture & Project Layout
+
+```
+jeeves/
+├── bot.py                  # Main Telegram bot entrypoint
+├── config.py               # Central configuration & environment loader
+├── requirements.txt        # Python package dependencies
+├── .env.example            # Environment variables template
+├── .gitignore              # Git exclusion rules
+├── README.md               # 5 W's and H documentation
+├── LICENSE                 # MIT License
+│
+├── services/               # Core business logic & AI/RAG services
+│   ├── __init__.py
+│   ├── llm_engine.py       # Ollama LLM client & prompt engine
+│   ├── network_tools.py    # Live network diagnostics & IP sandbox
+│   ├── technical_service.py# CLI syntax, CVEs & tech routing
+│   ├── hardware_service.py # Datasheet & hardware EOL tracking
+│   ├── software_service.py # OS/firmware upgrade paths & EOES
+│   ├── wiki_service.py     # Wikipedia search with relevance filter
+│   └── search_service.py   # Multi-engine web search fallback
+│
+├── data/                   # Data files and hardware/software lists
+│   ├── hardware.txt        # Tracked hardware appliances
+│   └── software.txt        # Tracked software & OS versions
+│
+├── systemd/                # Linux service definition & installer
+│   └── telegram-bot.service
+│
+└── tests/                  # Test suites and diagnostic verification scripts
+    ├── __init__.py
+    ├── test_engine.py
+    ├── test_network_tools.py
+    ├── test_hardware_and_search.py
+    ├── test_software_pipeline.py
+    └── test_technical_pipeline.py
+```
+
 #### Architecture Flow
 
 ```mermaid
@@ -125,13 +163,13 @@ flowchart TD
         U3 --> Router
     end
 
-    subgraph Network_Engine [Network Diagnostic Engine - network_tools.py]
+    subgraph Network_Engine [Network Diagnostic Engine - services/network_tools.py]
         Sandbox{Security & IP Sandbox}
         Subproc[Safe Subprocess Execution\nArgument List / Timeout Bound]
         Blocked[⚠️ Reject Private / Loopback IPs]
     end
 
-    subgraph AI_Engine [Technical Intelligence & LLM - llm_engine.py]
+    subgraph AI_Engine [Technical Intelligence & LLM - services/llm_engine.py]
         TechService[Technical & Lifecycle RAG]
         WikiService[Wikipedia Keyword Relevance Filter]
         Ollama[Ollama Inference Daemon\nQwen 2.5 1.5B @ 127.0.0.1:11434]
@@ -205,7 +243,7 @@ TEMPERATURE=0.4
 
 #### Run 24/7 via Systemd (Recommended):
 ```bash
-sudo cp telegram-bot.service /etc/systemd/system/
+sudo cp systemd/telegram-bot.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now telegram-bot
 
@@ -223,6 +261,29 @@ journalctl -u telegram-bot -f
    * Private subnets: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`
    * Link-local & Cloud Metadata: `169.254.0.0/16` (`169.254.169.254`)
 3. **Execution Guardrails:** Hard timeouts (5–20s) ensure high availability and prevent resource starvation.
+
+---
+
+## 🧪 Running Test Suites
+
+Execute any of the test modules from the project root:
+
+```bash
+# Test network diagnostic tools & security sandbox
+python tests/test_network_tools.py
+
+# Test technical CLI & CVE pipeline
+python tests/test_technical_pipeline.py
+
+# Test software lifecycle & EOL pipeline
+python tests/test_software_pipeline.py
+
+# Test hardware tracking & web search
+python tests/test_hardware_and_search.py
+
+# Test AI engine & Wikipedia search
+python tests/test_engine.py
+```
 
 ---
 

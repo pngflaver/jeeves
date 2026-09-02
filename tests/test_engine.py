@@ -1,7 +1,11 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import asyncio
 import time
-from llm_engine import LLMEngine
-from wiki_service import search_wikipedia
+from services.llm_engine import LLMEngine
+from services.wiki_service import search_wikipedia
 
 async def test_expanded_engine():
     print("🤖 Initializing Expanded LLMEngine & Wikipedia test...")

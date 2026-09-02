@@ -4,7 +4,7 @@ import logging
 import asyncio
 from typing import List, Dict, Optional
 import config
-from search_service import search_hardware_lifecycle
+from .search_service import search_hardware_lifecycle
 
 logger = logging.getLogger(__name__)
 

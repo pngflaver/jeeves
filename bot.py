@@ -10,13 +10,13 @@ from telegram.ext import (
     filters,
 )
 import config
-from llm_engine import LLMEngine
-from wiki_service import search_wikipedia
-from search_service import search_web, search_hardware_lifecycle
-from hardware_service import hardware_service
-from software_service import software_service
-from technical_service import technical_service
-import network_tools
+from services.llm_engine import LLMEngine
+from services.wiki_service import search_wikipedia
+from services.search_service import search_web, search_hardware_lifecycle
+from services.hardware_service import hardware_service
+from services.software_service import software_service
+from services.technical_service import technical_service
+from services import network_tools
 
 # Configure logging
 logging.basicConfig(

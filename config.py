@@ -1,9 +1,14 @@
 import os
+from pathlib import Path
 from typing import Set
 from dotenv import load_dotenv
 
+# Base directory paths
+BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
+
 # Load .env file
-load_dotenv()
+load_dotenv(BASE_DIR / ".env")
 
 # Telegram Bot Configuration
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
@@ -16,10 +21,10 @@ TEMPERATURE = float(os.getenv("TEMPERATURE", "0.4"))
 
 # Web Search, Hardware & Software Tracking Configuration
 BRAVE_SEARCH_API_KEY = os.getenv("BRAVE_SEARCH_API_KEY", "").strip()
-HARDWARE_CONFIG_FILE = os.getenv("HARDWARE_CONFIG_FILE", "hardware.txt").strip()
-HARDWARE_CACHE_FILE = os.getenv("HARDWARE_CACHE_FILE", "hardware_cache.json").strip()
-SOFTWARE_CONFIG_FILE = os.getenv("SOFTWARE_CONFIG_FILE", "software.txt").strip()
-SOFTWARE_CACHE_FILE = os.getenv("SOFTWARE_CACHE_FILE", "software_cache.json").strip()
+HARDWARE_CONFIG_FILE = os.getenv("HARDWARE_CONFIG_FILE", str(DATA_DIR / "hardware.txt")).strip()
+HARDWARE_CACHE_FILE = os.getenv("HARDWARE_CACHE_FILE", str(DATA_DIR / "hardware_cache.json")).strip()
+SOFTWARE_CONFIG_FILE = os.getenv("SOFTWARE_CONFIG_FILE", str(DATA_DIR / "software.txt")).strip()
+SOFTWARE_CACHE_FILE = os.getenv("SOFTWARE_CACHE_FILE", str(DATA_DIR / "software_cache.json")).strip()
 
 # Access Control (Optional: comma-separated chat IDs)
 _raw_allowed = os.getenv("ALLOWED_CHAT_IDS", "").strip()
