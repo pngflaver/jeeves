@@ -65,6 +65,9 @@ Jeeves is a multi-purpose Telegram bot built with a dual-engine architecture:
 * **Hardware Lifecycle & Specs:** Automatically parses and tracks datasheets for FortiGate, Cisco, HPE, Dell, and Ubiquiti appliances.
 * **Software Lifecycle & Upgrades:** Tracks release dates, End of Engineering Support (EOES), EOL dates, and safe upgrade paths for FortiOS, VMware ESXi, Ubuntu, RHEL, and Windows Server.
 * **CVE Security Lookups:** Queries vulnerability severity, CVSS scores, affected versions, and official mitigation workarounds.
+* **Movie & TV Metadata Extraction:** 
+  * **`/movie <title>`** — Extracts `{id}` (IMDb `tt...` or TMDB ID).
+  * **`/tv <title> [season] [episode]`** — Extracts `{id}`, `{season}`, and `{episode}` (e.g. `/tv Breaking Bad s02e05` or `/tv The Boys 3 2`).
 * **Dual-Layer Wikipedia Search:** Validates keyword relevance before summarizing topics, with direct reference link citations.
 * **Fallback AI Reasoning:** Solves math, regional currency conversions (e.g. PGK, AUD, PHP), and commodity rates using direct internal reasoning without fake links.
 
@@ -127,12 +130,17 @@ jeeves/
 │   ├── technical_service.py# CLI syntax, CVEs & tech routing
 │   ├── hardware_service.py # Datasheet & hardware EOL tracking
 │   ├── software_service.py # OS/firmware upgrade paths & EOES
+│   ├── flight_service.py   # Flight routes and aviation schedule search
+│   ├── persona_service.py  # VIP handling and bot persona
+│   ├── profile_service.py  # User profiling, tone & sentiment assessment
+│   ├── movie_service.py    # Movie & TV show IMDb ID / TMDB ID lookup
 │   ├── wiki_service.py     # Wikipedia search with relevance filter
 │   └── search_service.py   # Multi-engine web search fallback
 │
-├── data/                   # Data files and hardware/software lists
+├── data/                   # Data files, inventory, and user profiles
 │   ├── hardware.txt        # Tracked hardware appliances
-│   └── software.txt        # Tracked software & OS versions
+│   ├── software.txt        # Tracked software & OS versions
+│   └── user_profiles.json  # Behavioral profiles & interaction history
 │
 ├── systemd/                # Linux service definition & installer
 │   └── telegram-bot.service
@@ -143,7 +151,9 @@ jeeves/
     ├── test_network_tools.py
     ├── test_hardware_and_search.py
     ├── test_software_pipeline.py
-    └── test_technical_pipeline.py
+    ├── test_technical_pipeline.py
+    ├── test_profile_service.py
+    └── test_movie_pipeline.py
 ```
 
 #### Architecture Flow

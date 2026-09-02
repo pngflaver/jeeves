@@ -18,6 +18,10 @@ __pycache__/
 # Cache data files
 hardware_cache.json
 software_cache.json
+user_profiles.json
+data/user_profiles.json
+data/hardware_cache.json
+data/software_cache.json
 
 # Logs
 *.log

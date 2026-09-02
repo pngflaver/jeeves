@@ -19,6 +19,8 @@ from services.software_service import software_service
 from services.technical_service import technical_service
 from services.persona_service import persona_service
 from services.flight_service import flight_service
+from services.profile_service import profile_service
+from services.movie_service import movie_service
 from services import network_tools
 
 # Configure logging
@@ -53,12 +55,12 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"👋 Hi! I am your Technical AI assistant & Network Diagnostics bot.\n\n"
         f"🤖 **Technical & AI Knowledge (Web Search + HW/SW Lifecycle):**\n"
         f"• `/ask <question>` — Ask technical, CLI, CVE, hardware, or software questions\n"
+        f"• `/movie <title>` — Look up Movie ID (`{{id}}` with `tt` prefix or TMDB ID)\n"
+        f"• `/tv <title> [s] [e]` — Look up TV Show (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <from> <to>` — Search flight routes & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `@{bot_user.username} <question>` — Mention in group chats\n"
         f"• `/hardware` — View tracked hardware inventory list\n"
-        f"• `/software` — View tracked software & OS version list\n"
-        f"• `/sync_hardware` — Sync EOL data for tracked hardware\n"
-        f"• `/sync_software` — Sync lifecycle data for tracked software\n\n"
+        f"• `/software` — View tracked software & OS version list\n\n"
         f"🛠️ **Live Network Diagnostics:**\n"
         f"• `/ping <host>` — Test host latency (4 packets)\n"
         f"• `/traceroute <host>` — Trace network route hops\n"
@@ -80,14 +82,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     bot_user = await context.bot.get_me()
     help_text = (
         f"📖 **Command Reference:**\n\n"
-        f"🧠 **AI & Technical Knowledge:**\n"
+        f"🧠 **AI & Media Knowledge:**\n"
         f"• `/ask <prompt>` — Ask hardware/software EOL, CLI configs, CVEs, or general IT questions\n"
+        f"• `/movie <title>` — Extract movie parameters (`{{id}}` from IMDb/TMDB)\n"
+        f"• `/tv <title> [s] [e]` — Extract TV show parameters (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <orig> <dest>` — Flight schedules & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `@{bot_user.username} <prompt>` — Mention in group chats\n"
         f"• `/hardware` — List tracked hardware devices from `{config.HARDWARE_CONFIG_FILE}`\n"
         f"• `/software` — List tracked software/OS versions from `{config.SOFTWARE_CONFIG_FILE}`\n"
-        f"• `/sync_hardware` — Fetch and refresh EOL/lifecycle cache for tracked hardware\n"
-        f"• `/sync_software` — Fetch and refresh lifecycle cache for tracked software\n"
         f"• `/model` — Show active local LLM model\n\n"
         f"🌐 **Network Diagnostics:**\n"
         f"• `/ping <host>` — Example: `/ping 1.1.1.1`\n"
@@ -100,6 +102,67 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"• `/ipinfo <ip/host>` — Example: `/ipinfo 8.8.8.8`"
     )
     await update.effective_message.reply_text(help_text, parse_mode=constants.ParseMode.MARKDOWN)
+
+async def movie_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /movie and /movies lookup command extracting {id}."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    title = " ".join(context.args).strip()
+    if not title:
+        await update.effective_message.reply_text(
+            "Usage: `/movie <title>` (e.g. `/movie Inception` or `/movie Interstellar 2014`)\n"
+            "Returns `{id}` parameter from IMDb / TheMovieDB.",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING)
+    movie_data = await movie_service.lookup_movie(title)
+    if not movie_data or not (movie_data.get("imdb_id") or movie_data.get("tmdb_id")):
+        await update.effective_message.reply_text(
+            f"❌ Could not find movie or IMDb/TMDB ID for: `{title}`",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    formatted_card = movie_service.format_movie_card(movie_data)
+    await update.effective_message.reply_text(
+        formatted_card,
+        parse_mode=constants.ParseMode.MARKDOWN
+    )
+
+async def tv_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /tv and /series lookup command extracting {id}, {season}, and {episode}."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    raw_query = " ".join(context.args).strip()
+    if not raw_query:
+        await update.effective_message.reply_text(
+            "Usage:\n"
+            "• `/tv <title> <season> <episode>` (e.g. `/tv Breaking Bad 2 5`)\n"
+            "• `/tv <title> s02e05` (e.g. `/tv The Boys s03e02`)\n"
+            "• `/tv <title>` (defaults to season 1, episode 1)\n\n"
+            "Returns `{id}`, `{season}`, and `{episode}` parameters.",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING)
+    tv_data, season, episode = await movie_service.lookup_tv(raw_query)
+    if not tv_data or not (tv_data.get("imdb_id") or tv_data.get("tmdb_id")):
+        await update.effective_message.reply_text(
+            f"❌ Could not find TV series or IMDb/TMDB ID for: `{raw_query}`",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    formatted_card = movie_service.format_tv_card(tv_data, season, episode)
+    await update.effective_message.reply_text(
+        formatted_card,
+        parse_mode=constants.ParseMode.MARKDOWN
+    )
 
 async def hardware_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """List tracked hardware devices in hardware.txt and their cache status."""
@@ -463,7 +526,16 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     stop_typing_event = asyncio.Event()
     typing_task = asyncio.create_task(_keep_typing(context.bot, chat_id, stop_typing_event))
 
-    logger.info(f"User in chat {chat_id} asked AI: '{prompt[:60]}...'")
+    user = update.effective_user
+    user_str = f"@{user.username} ({user.full_name}, ID: {user.id})" if user else f"User in chat {chat_id}"
+    logger.info(f"[{user_str}] in chat {chat_id} asked AI: '{prompt[:100]}...'")
+
+    # Record interaction & update user behavioral profile
+    if user:
+        try:
+            profile_service.record_interaction(user, chat_id, prompt)
+        except Exception as prof_err:
+            logger.error(f"Error recording user profile interaction: {prof_err}")
 
     try:
         search_results = None
@@ -517,6 +589,22 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         stop_typing_event.set()
         typing_task.cancel()
 
+async def post_init(application: Application) -> None:
+    """Run background scheduled tasks after bot startup."""
+    async def _daily_worker():
+        while True:
+            try:
+                await asyncio.sleep(86400)  # Every 24 hours
+                logger.info("Triggering automated daily user profile assessment...")
+                profile_service.assess_all_users()
+                logger.info("Automated daily user profile assessment completed.")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in daily user assessment worker: {e}")
+
+    asyncio.create_task(_daily_worker())
+
 def main() -> None:
     """Start the bot."""
     if not config.TELEGRAM_BOT_TOKEN or config.TELEGRAM_BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
@@ -524,13 +612,15 @@ def main() -> None:
         sys.exit(1)
 
     logger.info("Initializing Telegram Bot Application...")
-    app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).build()
+    app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).post_init(post_init).build()
 
     # Informational & AI Handlers
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("model", model_command))
     app.add_handler(CommandHandler("ask", ask_command))
+    app.add_handler(CommandHandler(["movie", "movies", "imdb", "tmdb"], movie_command))
+    app.add_handler(CommandHandler(["tv", "series"], tv_command))
     app.add_handler(CommandHandler(["flight", "flights"], flight_command))
     app.add_handler(CommandHandler("hardware", hardware_command))
     app.add_handler(CommandHandler(["sync_hardware", "synchardware"], sync_hardware_command))
@@ -550,7 +640,7 @@ def main() -> None:
     # General Chat / Mention Message Handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    logger.info(f"Bot started! Using LLM model: {config.OLLAMA_MODEL} with Live Web Search & Network Tools")
+    logger.info(f"Bot started! Using LLM model: {config.OLLAMA_MODEL} with User Profiling & Live Diagnostic Tools")
     app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":

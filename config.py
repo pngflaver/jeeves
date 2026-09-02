@@ -25,6 +25,11 @@ HARDWARE_CONFIG_FILE = os.getenv("HARDWARE_CONFIG_FILE", str(DATA_DIR / "hardwar
 HARDWARE_CACHE_FILE = os.getenv("HARDWARE_CACHE_FILE", str(DATA_DIR / "hardware_cache.json")).strip()
 SOFTWARE_CONFIG_FILE = os.getenv("SOFTWARE_CONFIG_FILE", str(DATA_DIR / "software.txt")).strip()
 SOFTWARE_CACHE_FILE = os.getenv("SOFTWARE_CACHE_FILE", str(DATA_DIR / "software_cache.json")).strip()
+USER_PROFILES_FILE = os.getenv("USER_PROFILES_FILE", str(DATA_DIR / "user_profiles.json")).strip()
+TMDB_API_KEY = os.getenv("TMDB_API_KEY", "").strip()
+OMDB_API_KEY = os.getenv("OMDB_API_KEY", "").strip()
+MOVIE_ENDPOINT_TEMPLATE = os.getenv("MOVIE_ENDPOINT_TEMPLATE", "https://111movies.net/movie/{id}").strip()
+TV_ENDPOINT_TEMPLATE = os.getenv("TV_ENDPOINT_TEMPLATE", "https://111movies.net/tv/{id}/{season}/{episode}").strip()
 
 # Access Control (Optional: comma-separated chat IDs)
 _raw_allowed = os.getenv("ALLOWED_CHAT_IDS", "").strip()

@@ -11,6 +11,8 @@ from .wiki_service import search_wikipedia
 from .search_service import search_web, search_hardware_lifecycle
 from .persona_service import PersonaService, persona_service
 from .flight_service import FlightService, flight_service
+from .profile_service import ProfileService, profile_service
+from .movie_service import MovieService, movie_service
 
 __all__ = [
     "LLMEngine",
@@ -27,4 +29,10 @@ __all__ = [
     "persona_service",
     "FlightService",
     "flight_service",
+    "ProfileService",
+    "profile_service",
+    "MovieService",
+    "movie_service",
 ]
+
+
