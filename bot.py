@@ -17,6 +17,7 @@ from services.search_service import search_web, search_hardware_lifecycle
 from services.hardware_service import hardware_service
 from services.software_service import software_service
 from services.technical_service import technical_service
+from services.persona_service import persona_service
 from services import network_tools
 
 # Configure logging
@@ -444,15 +445,25 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         search_results = None
         wiki_info = None
 
-        # 1. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
-        intent, search_results = await technical_service.get_technical_context(prompt)
-        if search_results:
-            logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
-        else:
-            # Fallback to Wikipedia if web search yielded nothing
+        # 1. Check for Flavius VIP or Personal Identity inquiries
+        persona_intent = persona_service.classify_persona_intent(prompt)
+        if persona_intent == "FLAVIUS_VIP":
+            logger.info(f"Identified Flavius VIP inquiry from chat {chat_id}: '{prompt}'")
+            search_results = [persona_service.get_flavius_context()]
+        elif persona_intent == "PERSONAL_IDENTITY":
+            logger.info(f"Identified personal identity query from chat {chat_id}: '{prompt}'")
+            # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
             wiki_info = await search_wikipedia(prompt)
-            if wiki_info:
-                logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
+        else:
+            # 2. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
+            intent, search_results = await technical_service.get_technical_context(prompt)
+            if search_results:
+                logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
+            else:
+                # Fallback to Wikipedia if web search yielded nothing
+                wiki_info = await search_wikipedia(prompt)
+                if wiki_info:
+                    logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
 
         response_text = await llm.generate_response(
             prompt,

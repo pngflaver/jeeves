@@ -1,6 +1,6 @@
 """
 Jeeves Services Package
-Core AI inference, network diagnostic tools, and technical RAG services.
+Core AI inference, network diagnostic tools, technical RAG, and persona services.
 """
 
 from .llm_engine import LLMEngine
@@ -9,6 +9,7 @@ from .hardware_service import HardwareService, hardware_service
 from .software_service import SoftwareService, software_service
 from .wiki_service import search_wikipedia
 from .search_service import search_web, search_hardware_lifecycle
+from .persona_service import PersonaService, persona_service
 
 __all__ = [
     "LLMEngine",
@@ -21,4 +22,6 @@ __all__ = [
     "search_wikipedia",
     "search_web",
     "search_hardware_lifecycle",
+    "PersonaService",
+    "persona_service",
 ]
