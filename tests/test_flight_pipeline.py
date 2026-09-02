@@ -8,44 +8,51 @@ from services.llm_engine import LLMEngine
 
 async def test_flight():
     print("=" * 65)
-    print("✈️ TEST 1: Flight Route & Airport Code Resolution")
+    print("✈️ TEST 1: Flight Number & Code Detection")
     print("=" * 65)
+    f_info = flight_service.detect_flight_number("is PX3 active right now?")
+    print("Flight number detection 'PX3':", f_info)
+    assert f_info == ("PX3", "PX", "3")
 
-    test_queries = [
-        "find the next flight from pom to bne and which airlines",
-        "flights from Port Moresby to Sydney",
-        "airline schedule from POM to SIN",
-        "flights from Brisbane to Port Moresby"
-    ]
-
-    for q in test_queries:
-        is_flight = flight_service.is_flight_query(q)
-        orig_code, orig_name, dest_code, dest_name = flight_service.extract_route(q)
-        print(f"Query: '{q}'")
-        print(f"  -> Is Flight: {is_flight} | Origin: {orig_code} ({orig_name}) -> Dest: {dest_code} ({dest_name})")
-        assert is_flight is True
-        assert orig_code is not None and dest_code is not None
-    print("✅ Route extraction passed!")
+    f_info2 = flight_service.detect_flight_number("track flight QF57 to port moresby")
+    print("Flight number detection 'QF57':", f_info2)
+    assert f_info2 == ("QF57", "QF", "57")
+    print("✅ Flight code detection passed!")
 
     print("\n" + "=" * 65)
-    print("✈️ TEST 2: POM to BNE Flight Context & Live Search")
+    print("✈️ TEST 2: All International PX Flights Query")
     print("=" * 65)
-    query = "find the next flight from pom to bne and which airlines"
-    has_ctx, sources = await flight_service.get_flight_context(query)
-    print(f"Retrieved {len(sources)} sources for POM -> BNE:")
-    for s in sources[:2]:
+    q_px = "show me all international px flights"
+    has_ctx, px_sources = await flight_service.get_flight_context(q_px)
+    print(f"Retrieved {len(px_sources)} sources for PX international network:")
+    for s in px_sources[:2]:
         print(f"  • [{s.get('title')}] -> {s.get('url')}")
     assert has_ctx is True
-    assert len(sources) > 0
+    assert any("PX003" in s.get("snippet", "") or "Air Niugini" in s.get("snippet", "") for s in px_sources)
+    print("✅ PX international network search passed!")
 
     print("\n" + "=" * 65)
-    print("✈️ TEST 3: LLM Synthesis for Flight Query")
+    print("✈️ TEST 3: All QF Domestic Flights Leaving Brisbane")
     print("=" * 65)
+    q_qf = "list all qf domestic flights leaving brisbane"
+    has_ctx, qf_sources = await flight_service.get_flight_context(q_qf)
+    print(f"Retrieved {len(qf_sources)} sources for QF BNE domestic:")
+    for s in qf_sources[:2]:
+        print(f"  • [{s.get('title')}] -> {s.get('url')}")
+    assert has_ctx is True
+    assert any("QF500" in s.get("snippet", "") or "Brisbane" in s.get("snippet", "") for s in qf_sources)
+    print("✅ QF Brisbane domestic search passed!")
+
+    print("\n" + "=" * 65)
+    print("✈️ TEST 4: LLM Synthesis with Live Radar Tracking Link (PX3)")
+    print("=" * 65)
+    q_track = "is there an active flight for PX3 and where can i track it?"
+    has_ctx, track_sources = await flight_service.get_flight_context(q_track)
     engine = LLMEngine()
-    resp = await engine.generate_response(query, search_results=sources)
-    print(f"🤖 Bot Flight Response:\n{resp}\n")
-    assert "Air Niugini" in resp or "Qantas" in resp or "POM" in resp or "BNE" in resp or "Brisbane" in resp
-    print("✅ Flight LLM synthesis verified!")
+    resp_track = await engine.generate_response(q_track, search_results=track_sources)
+    print(f"🤖 Bot Flight Tracking Response:\n{resp_track}\n")
+    assert "PX3" in resp_track or "FlightRadar24" in resp_track or "flightradar24" in resp_track or "Air Niugini" in resp_track
+    print("✅ Flight tracking synthesis passed!")
 
     print("\n🎉 ALL FLIGHT PIPELINE TESTS PASSED!")
 
