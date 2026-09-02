@@ -1,0 +1,29 @@
+# ==========================================
+# Tracked Software, OS & Firmware List
+# Add software/firmware below (one per line).
+# Lines starting with # are ignored.
+# ==========================================
+
+# Network & Security Operating Systems / Firmware
+FortiOS 7.0
+FortiOS 7.2
+FortiOS 7.4
+Cisco IOS-XE 17.x
+Palo Alto PAN-OS 11.x
+Junos OS 23.x
+
+# Server Operating Systems
+Ubuntu 20.04 LTS
+Ubuntu 22.04 LTS
+Ubuntu 24.04 LTS
+Debian 12 Bookworm
+Red Hat Enterprise Linux 9
+Windows Server 2019
+Windows Server 2022
+
+# DevOps, Infrastructure & Databases
+Docker Engine
+Kubernetes 1.30
+Nginx
+PostgreSQL 16
+Python 3.12

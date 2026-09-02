@@ -1,0 +1,21 @@
+# ==========================================
+# Tracked Hardware Inventory & Lifecycle List
+# Add hardware devices below (one per line).
+# Lines starting with # are ignored.
+# ==========================================
+
+# Fortinet Firewalls & Appliances
+FortiGate 40F
+FortiGate 60F
+FortiGate 100F
+FortiSwitch 124F
+FortiAP 231F
+
+# Cisco Networking & Switches
+Cisco Catalyst 9200
+Cisco Catalyst 9300
+Cisco ISR 4331
+
+# Ubiquiti / UniFi
+UniFi Dream Machine Pro
+UniFi U6 Enterprise
