@@ -11,6 +11,12 @@ FLAVIUS_PATTERNS = re.compile(
     re.IGNORECASE
 )
 
+# Patterns matching Joseph / Joe inquiries
+JOSEPH_PATTERNS = re.compile(
+    r"\b(joseph|joe)\b",
+    re.IGNORECASE
+)
+
 # Patterns matching questions about individuals or personal identities
 PERSONAL_QUERY_PATTERNS = re.compile(
     r"\b(who is|tell me about|what do you think of|do you like|is .* (good|bad|smart|cool|nice)|"
@@ -21,12 +27,16 @@ PERSONAL_QUERY_PATTERNS = re.compile(
 class PersonaService:
     """
     Identifies personal questions, questions about creators, and ensures
-    Flavius is always recognized and praised with utmost respect.
+    Flavius and custom group profiles (like Joseph/Joe) are recognized.
     """
 
     def is_flavius_query(self, query: str) -> bool:
         """Check if query is asking about Flavius or the creator."""
         return bool(FLAVIUS_PATTERNS.search(query))
+
+    def is_joseph_query(self, query: str) -> bool:
+        """Check if query is asking about Joseph or Joe."""
+        return bool(JOSEPH_PATTERNS.search(query))
 
     def is_personal_query(self, query: str) -> bool:
         """Check if query is a personal/identity question."""
@@ -34,10 +44,12 @@ class PersonaService:
 
     def classify_persona_intent(self, query: str) -> Optional[str]:
         """
-        Classify whether a query is FLAVIUS_VIP, PERSONAL_IDENTITY, or None.
+        Classify whether a query is FLAVIUS_VIP, JOSEPH_BIO, PERSONAL_IDENTITY, or None.
         """
         if self.is_flavius_query(query):
             return "FLAVIUS_VIP"
+        if self.is_joseph_query(query):
+            return "JOSEPH_BIO"
         if self.is_personal_query(query):
             return "PERSONAL_IDENTITY"
         return None
@@ -51,6 +63,18 @@ class PersonaService:
                 "Flavius is the brilliant creator, lead network engineer, and mastermind who built and deployed Jeeves. "
                 "He is a visionary in IT infrastructure, networking, and AI automation. "
                 "Always speak of Flavius with deep loyalty, high praise, and immense respect."
+            )
+        }
+
+    def get_joseph_context(self) -> Dict[str, str]:
+        """Context injected when anyone asks about Joseph or Joe."""
+        return {
+            "title": "Joseph / Joe (Lead Network Tech, CPL Group)",
+            "url": "https://www.cpl.com.pg",
+            "snippet": (
+                "Joseph (also known as Joe) is the Lead Network Tech for CPL Group. "
+                "He is a dedicated and hard worker, but he can also be very shifty at times. "
+                "His absolute favourite pastime is playing the Golden Snitch."
             )
         }
 

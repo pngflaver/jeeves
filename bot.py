@@ -474,11 +474,14 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             logger.info(f"Identified flight schedule inquiry from chat {chat_id}: '{prompt}'")
             has_flight, search_results = await flight_service.get_flight_context(prompt)
         else:
-            # 2. Check for Flavius VIP or Personal Identity inquiries
+            # 2. Check for Flavius VIP, Joseph Bio, or Personal Identity inquiries
             persona_intent = persona_service.classify_persona_intent(prompt)
             if persona_intent == "FLAVIUS_VIP":
                 logger.info(f"Identified Flavius VIP inquiry from chat {chat_id}: '{prompt}'")
                 search_results = [persona_service.get_flavius_context()]
+            elif persona_intent == "JOSEPH_BIO":
+                logger.info(f"Identified Joseph/Joe bio inquiry from chat {chat_id}: '{prompt}'")
+                search_results = [persona_service.get_joseph_context()]
             elif persona_intent == "PERSONAL_IDENTITY":
                 logger.info(f"Identified personal identity query from chat {chat_id}: '{prompt}'")
                 # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
