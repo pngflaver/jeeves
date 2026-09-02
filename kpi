@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Quick CLI KPI Viewer for Jeeves Bot
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
+if [[ ! -d "${SCRIPT_DIR}/data" ]]; then
+    SCRIPT_DIR="/root/telegram"
+fi
+DATA_DIR="${SCRIPT_DIR}/data"
+KPI_TXT="${DATA_DIR}/kpis.txt"
+KPI_JSON="${DATA_DIR}/kpis.json"
+
+if [[ "${1:-}" == "--json" || "${1:-}" == "-j" ]]; then
+    if [[ -f "$KPI_JSON" ]]; then
+        cat "$KPI_JSON"
+    else
+        echo "❌ KPI JSON not found at $KPI_JSON"
+        exit 1
+    fi
+elif [[ "${1:-}" == "--refresh" || "${1:-}" == "-r" ]]; then
+    echo "🔄 Refreshing KPI metrics from live state..."
+    "${SCRIPT_DIR}/venv/bin/python" -c "from services.kpi_service import kpi_service; kpi_service.export_kpi_files(); print(kpi_service.generate_dashboard_text())"
+else
+    if [[ -f "$KPI_TXT" ]]; then
+        cat "$KPI_TXT"
+    else
+        echo "🔄 Initializing and exporting KPI data..."
+        "${SCRIPT_DIR}/venv/bin/python" -c "from services.kpi_service import kpi_service; kpi_service.export_kpi_files(); print(kpi_service.generate_dashboard_text())"
+    fi
+fi

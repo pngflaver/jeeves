@@ -17,10 +17,12 @@ from services.search_service import search_web, search_hardware_lifecycle
 from services.hardware_service import hardware_service
 from services.software_service import software_service
 from services.technical_service import technical_service
+import time
 from services.persona_service import persona_service
 from services.flight_service import flight_service
 from services.profile_service import profile_service
 from services.movie_service import movie_service
+from services.kpi_service import kpi_service
 from services import network_tools
 
 # Configure logging
@@ -41,10 +43,29 @@ def is_chat_allowed(chat_id: int) -> bool:
         return True
     return chat_id in config.ALLOWED_CHAT_IDS
 
+def track_kpi_command(name: str):
+    """Decorator to measure and record command execution in KPIService."""
+    def decorator(func):
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            t0 = time.time()
+            user_id = update.effective_user.id if update.effective_user else None
+            success = True
+            try:
+                return await func(update, context)
+            except Exception as e:
+                success = False
+                raise
+            finally:
+                duration_ms = (time.time() - t0) * 1000.0
+                kpi_service.record_command(name, user_id=user_id, success=success, duration_ms=duration_ms)
+        return wrapper
+    return decorator
+
 # ==========================================
 # Informational & General Commands
 # ==========================================
 
+@track_kpi_command("start")
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /start command."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -74,6 +95,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
     await update.effective_message.reply_text(welcome_text, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("help")
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /help command."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -103,6 +125,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     )
     await update.effective_message.reply_text(help_text, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("movie")
 async def movie_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /movie and /movies lookup command extracting {id}."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -132,6 +155,7 @@ async def movie_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         parse_mode=constants.ParseMode.MARKDOWN
     )
 
+@track_kpi_command("tv")
 async def tv_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /tv and /series lookup command extracting {id}, {season}, and {episode}."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -164,6 +188,7 @@ async def tv_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
         parse_mode=constants.ParseMode.MARKDOWN
     )
 
+@track_kpi_command("hardware")
 async def hardware_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """List tracked hardware devices in hardware.txt and their cache status."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -186,6 +211,7 @@ async def hardware_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     lines.append(f"\n💡 *Tip: Run `/sync_hardware` to pre-fetch EOL & lifecycle data for all devices.*")
     await update.effective_message.reply_text("\n".join(lines), parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("software")
 async def software_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """List tracked software and OS versions in software.txt and their cache status."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -208,6 +234,7 @@ async def software_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     lines.append(f"\n💡 *Tip: Run `/sync_software` to pre-fetch lifecycle and upgrade data for all software.*")
     await update.effective_message.reply_text("\n".join(lines), parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("sync_hardware")
 async def sync_hardware_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Trigger on-demand background sync of all hardware listed in hardware.txt."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -237,6 +264,7 @@ async def sync_hardware_command(update: Update, context: ContextTypes.DEFAULT_TY
 
     asyncio.create_task(_do_sync())
 
+@track_kpi_command("sync_software")
 async def sync_software_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Trigger on-demand background sync of all software listed in software.txt."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -266,6 +294,7 @@ async def sync_software_command(update: Update, context: ContextTypes.DEFAULT_TY
 
     asyncio.create_task(_do_sync())
 
+@track_kpi_command("model")
 async def model_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Show active and available models."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -280,6 +309,7 @@ async def model_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
     await update.effective_message.reply_text(msg, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("flight")
 async def flight_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /flight <origin> <destination> command."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -305,6 +335,7 @@ async def flight_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 # Network Diagnostic Commands
 # ==========================================
 
+@track_kpi_command("ping")
 async def ping_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live ping."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -319,6 +350,7 @@ async def ping_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     result = await network_tools.run_ping(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("traceroute")
 async def traceroute_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live traceroute."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -333,6 +365,7 @@ async def traceroute_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     result = await network_tools.run_traceroute(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("dns")
 async def dns_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live DNS lookup."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -349,6 +382,7 @@ async def dns_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     result = await network_tools.run_dns(target, rec_type)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("nmap")
 async def nmap_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live nmap scan on common ports."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -363,6 +397,7 @@ async def nmap_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     result = await network_tools.run_nmap(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("whois")
 async def whois_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live whois lookup."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -377,6 +412,7 @@ async def whois_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     result = await network_tools.run_whois(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("http")
 async def http_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live HTTP header / latency check."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -391,6 +427,7 @@ async def http_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     result = await network_tools.run_http(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("ssl")
 async def ssl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live SSL certificate check."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -405,6 +442,7 @@ async def ssl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     result = await network_tools.run_ssl(target)
     await update.effective_message.reply_text(result, parse_mode=constants.ParseMode.MARKDOWN)
 
+@track_kpi_command("ipinfo")
 async def ipinfo_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Run live IP geolocation / ASN check."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -423,6 +461,7 @@ async def ipinfo_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 # General AI & Mention Handling
 # ==========================================
 
+@track_kpi_command("ask")
 async def ask_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle /ask general knowledge command."""
     if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
@@ -537,6 +576,8 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         except Exception as prof_err:
             logger.error(f"Error recording user profile interaction: {prof_err}")
 
+    t_ai_start = time.time()
+    ai_success = True
     try:
         search_results = None
         wiki_info = None
@@ -585,9 +626,19 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 response_text,
                 reply_to_message_id=message.message_id
             )
+    except Exception as ai_err:
+        ai_success = False
+        raise ai_err
     finally:
         stop_typing_event.set()
         typing_task.cancel()
+        ai_duration_ms = (time.time() - t_ai_start) * 1000.0
+        kpi_service.record_ai_query(
+            user_id=user.id if user else None,
+            prompt_length=len(prompt),
+            duration_ms=ai_duration_ms,
+            success=ai_success
+        )
 
 async def post_init(application: Application) -> None:
     """Run background scheduled tasks after bot startup."""
@@ -603,13 +654,27 @@ async def post_init(application: Application) -> None:
             except Exception as e:
                 logger.error(f"Error in daily user assessment worker: {e}")
 
+    async def _kpi_heartbeat():
+        while True:
+            try:
+                await asyncio.sleep(60)  # Refresh metrics every 60s
+                kpi_service.export_kpi_files()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in KPI heartbeat worker: {e}")
+
     asyncio.create_task(_daily_worker())
+    asyncio.create_task(_kpi_heartbeat())
 
 def main() -> None:
     """Start the bot."""
     if not config.TELEGRAM_BOT_TOKEN or config.TELEGRAM_BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
         logger.error("ERROR: TELEGRAM_BOT_TOKEN is not set in .env!")
         sys.exit(1)
+
+    # Initial export of KPI files
+    kpi_service.export_kpi_files()
 
     logger.info("Initializing Telegram Bot Application...")
     app = Application.builder().token(config.TELEGRAM_BOT_TOKEN).post_init(post_init).build()
