@@ -23,6 +23,7 @@ from services.flight_service import flight_service
 from services.profile_service import profile_service
 from services.movie_service import movie_service
 from services.kpi_service import kpi_service
+from services.places_service import places_service
 from services import network_tools
 
 # Configure logging
@@ -79,6 +80,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"• `/movie <title>` — Look up Movie ID (`{{id}}` with `tt` prefix or TMDB ID)\n"
         f"• `/tv <title> [s] [e]` — Look up TV Show (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <from> <to>` — Search flight routes & operating airlines (e.g. `/flight POM BNE`)\n"
+        f"• `/place <name>` — Look up local business, operating hours, phone & map\n"
         f"• `@{bot_user.username} <question>` — Mention in group chats\n"
         f"• `/hardware` — View tracked hardware inventory list\n"
         f"• `/software` — View tracked software & OS version list\n\n"
@@ -104,8 +106,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     bot_user = await context.bot.get_me()
     help_text = (
         f"📖 **Command Reference:**\n\n"
-        f"🧠 **AI & Media Knowledge:**\n"
+        f"🧠 **AI, Places & Media Knowledge:**\n"
         f"• `/ask <prompt>` — Ask hardware/software EOL, CLI configs, CVEs, or general IT questions\n"
+        f"• `/place <name>` — Look up local business, operating hours & phone (e.g. `/place CPL Vision City`)\n"
         f"• `/movie <title>` — Extract movie parameters (`{{id}}` from IMDb/TMDB)\n"
         f"• `/tv <title> [s] [e]` — Extract TV show parameters (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <orig> <dest>` — Flight schedules & operating airlines (e.g. `/flight POM BNE`)\n"
@@ -330,6 +333,30 @@ async def flight_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     flight_query = f"flights from {query}" if "to" in query or len(context.args) >= 2 else f"flight {query}"
     await process_and_reply(update, context, flight_query)
+
+@track_kpi_command("place")
+async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Look up local business, operating hours, phone, and address via OpenStreetMap & web."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    query = " ".join(context.args).strip()
+    if not query:
+        await update.effective_message.reply_text(
+            "📍 **Local Place & Business Lookup Usage:**\n"
+            "• `/place CPL Medical Center Vision City`\n"
+            "• `/place Airways Hotel Port Moresby`\n"
+            "• `/place Daikoku Restaurant`\n"
+            "• `/place Brian Bell Plaza Boroko`\n\n"
+            "Retrieves verified operating hours, phone, address, and map links without Google API keys.",
+            parse_mode=constants.ParseMode.MARKDOWN
+        )
+        return
+
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING)
+    place_data = await places_service.lookup_place(query)
+    card = places_service.format_place_card(place_data)
+    await update.effective_message.reply_text(card, parse_mode=constants.ParseMode.MARKDOWN)
 
 # ==========================================
 # Network Diagnostic Commands
@@ -687,6 +714,7 @@ def main() -> None:
     app.add_handler(CommandHandler(["movie", "movies", "imdb", "tmdb"], movie_command))
     app.add_handler(CommandHandler(["tv", "series"], tv_command))
     app.add_handler(CommandHandler(["flight", "flights"], flight_command))
+    app.add_handler(CommandHandler(["place", "places", "venue", "locate"], place_command))
     app.add_handler(CommandHandler("hardware", hardware_command))
     app.add_handler(CommandHandler(["sync_hardware", "synchardware"], sync_hardware_command))
     app.add_handler(CommandHandler("software", software_command))

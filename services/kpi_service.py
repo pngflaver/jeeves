@@ -94,6 +94,8 @@ class KPIService:
             cat = "Media & Streaming"
         elif command_name in ["flight"]:
             cat = "Aviation & Flights"
+        elif command_name in ["place", "places", "venue", "locate"]:
+            cat = "Local Places & Hours"
         elif command_name in ["hardware", "sync_hardware"]:
             cat = "Hardware & Specs (EOL/EOS)"
         elif command_name in ["software", "sync_software"]:

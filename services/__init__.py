@@ -14,6 +14,7 @@ from .flight_service import FlightService, flight_service
 from .profile_service import ProfileService, profile_service
 from .movie_service import MovieService, movie_service
 from .kpi_service import KPIService, kpi_service
+from .places_service import PlacesService, places_service
 
 __all__ = [
     "LLMEngine",
@@ -36,6 +37,8 @@ __all__ = [
     "movie_service",
     "KPIService",
     "kpi_service",
+    "PlacesService",
+    "places_service",
 ]
 
 
