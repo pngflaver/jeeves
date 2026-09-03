@@ -18,12 +18,15 @@ class LLMEngine:
         user_prompt: str,
         context_messages: Optional[List[Dict[str, str]]] = None,
         wiki_info: Optional[Dict[str, str]] = None,
-        search_results: Optional[List[Dict[str, str]]] = None
+        search_results: Optional[List[Dict[str, str]]] = None,
+        is_technical: bool = True
     ) -> str:
         """
         Generate an expanded, evidence-based response using search results or Wikipedia.
+        Dynamically applies engineering-grade prompt or general assistant prompt.
         """
-        messages = [{"role": "system", "content": self.system_prompt}]
+        sys_prompt = self.system_prompt if is_technical else getattr(config, "GENERAL_SYSTEM_PROMPT", self.system_prompt)
+        messages = [{"role": "system", "content": sys_prompt}]
 
         # Add recent conversation context (last 4 messages)
         if context_messages:
@@ -36,8 +39,9 @@ class LLMEngine:
                 f"Source {i+1}: {r.get('title')}\nURL: {r.get('url')}\nContent: {r.get('snippet')}"
                 for i, r in enumerate(search_results)
             ])
+            ref_header = "[Live Web Search & Technical Documentation Reference]" if is_technical else "[Live Web Search Reference]"
             search_context = (
-                f"[Live Web Search & Technical Documentation Reference]\n"
+                f"{ref_header}\n"
                 f"{snippets_formatted}\n"
                 f"[End of Reference]\n\n"
                 f"User Question: {user_prompt}"

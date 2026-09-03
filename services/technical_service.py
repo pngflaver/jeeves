@@ -51,6 +51,16 @@ SOFTWARE_PATTERNS = {
 # Regex for CVE IDs (e.g. CVE-2024-21762)
 CVE_REGEX = re.compile(r"\b(CVE-\d{4}-\d{4,7})\b", re.IGNORECASE)
 
+# Technical domain keywords that indicate a networking, hardware, or cybersecurity question
+TECH_DOMAIN_KEYWORDS = re.compile(
+    r"\b(vlan|vlans|bgp|ospf|ipsec|vpn|nat|firewall|firewalls|router|routers|switch|switches|gateway|"
+    r"subnet|cidr|dhcp|tcp|udp|icmp|packet|latency|acl|acls|snmp|syslog|ntp|ssh|tacacs|radius|"
+    r"throughput|datasheet|ports|interfaces|cve|cvss|vulnerability|exploit|firmware|fortios|junos|"
+    r"routeros|kernel|docker|kubernetes|k8s|systemd|iptables|wireguard|eol|eos|eosl|eoes|upgrade path|"
+    r"compatibility matrix|cli|config|configurations|traceroute|nmap|whois|ssl|tls|cert|certificate)\b",
+    re.IGNORECASE
+)
+
 # Keywords indicating Software Upgrade / Migration requests
 SOFTWARE_UPGRADE_KEYWORDS = re.compile(
     r"\b(upgrade path|upgrade guide|upgrade from|upgrade to|how to upgrade|migrate|migration|"
@@ -118,34 +128,28 @@ class TechnicalService:
             if match:
                 matched_identity = match.group(0).strip()
                 # If query contains explicit version (e.g. FortiOS 7.2.4)
-                return sw_name, matched_identity, "software"
+                ver_match = re.search(r"(\d+(?:\.\d+)+)", query)
+                if ver_match:
+                    full_id = f"{sw_name} {ver_match.group(1)}"
+                else:
+                    full_id = matched_identity
+                vendor = "Fortinet" if "FortiOS" in sw_name else None
+                return vendor, full_id, "software"
 
         # 2. Check Hardware Vendors
         detected_vendor = None
-        for vendor, pattern in VENDOR_PATTERNS.items():
+        for vendor_name, pattern in VENDOR_PATTERNS.items():
             if re.search(pattern, query, re.IGNORECASE):
-                detected_vendor = vendor
+                detected_vendor = vendor_name
                 break
 
-        # Match specific product families like FortiGate 60F, Catalyst 9300, ISR 4331, UDM-Pro
-        family_model_match = re.search(
-            r"\b((?:FortiGate|FortiSwitch|FortiAP|Catalyst|Nexus|ISR|ASR|EdgeRouter|UniFi|SRX|PA|CCR|CRS)\s*[-_]?\s*[A-Za-z0-9_-]+)\b",
-            query,
-            re.IGNORECASE
-        )
-        if family_model_match:
-            full_identity = family_model_match.group(1).strip()
-            return detected_vendor, full_identity, "hardware"
-
-        # Extract generic model designations
-        model_pattern = r"\b([A-Za-z]{1,4}[-_]?\d{2,5}[A-Za-z0-9_-]*)\b"
-        model_matches = re.findall(model_pattern, query)
-        filtered_models = [
-            m for m in model_matches 
-            if not m.lower().startswith("cve") and not m.lower() in ("http", "https", "ipv4", "ipv6", "vlan", "port", "ping")
-            and len(m) >= 2
-        ]
-        detected_model = filtered_models[0] if filtered_models else None
+        # 3. Check for specific model identifiers
+        model_match = re.search(r"\b([A-Za-z]{2,5}[-_]?[A-Za-z0-9]{2,8}[A-Za-z]?)\b", query)
+        detected_model = None
+        if model_match:
+            candidate = model_match.group(1).upper()
+            if candidate not in ["WHAT", "WHEN", "WHERE", "HOW", "SHOW", "LIST", "CHECK", "TEST", "PING"]:
+                detected_model = candidate
 
         full_identity = None
         if detected_vendor and detected_model:
@@ -158,16 +162,20 @@ class TechnicalService:
         category = "hardware" if detected_vendor or detected_model else "general"
         return detected_vendor, full_identity, category
 
-    def classify_intent(self, query: str) -> str:
+    def classify_intent(self, query: str, is_technical: bool = True) -> str:
         """
         Classify the query into:
+        - 'GENERAL_WEB' (Everyday / general non-technical web search)
         - 'CVE' (Vulnerability/CVE security advisory)
         - 'SOFTWARE_UPGRADE' (Software upgrade path, migration, compatibility)
         - 'SOFTWARE_INSTALL' (Software installation, deployment, docker run)
         - 'CLI_CONFIG' (CLI commands, configuration guides, syntax)
         - 'SPECS_EOL' (Datasheet, throughput, ports, lifecycle/EOL)
-        - 'GENERAL_TECH' (General IT/network question)
+        - 'TECHNICAL_GENERAL' (General IT/network question)
         """
+        if not is_technical:
+            return "GENERAL_WEB"
+
         if CVE_REGEX.search(query) or "vulnerability" in query.lower() or "security advisory" in query.lower():
             return "CVE"
         if SOFTWARE_UPGRADE_KEYWORDS.search(query):
@@ -178,7 +186,7 @@ class TechnicalService:
             return "CLI_CONFIG"
         if SPECS_EOL_KEYWORDS.search(query):
             return "SPECS_EOL"
-        return "GENERAL_TECH"
+        return "TECHNICAL_GENERAL"
 
     def build_search_query(
         self,
@@ -188,7 +196,11 @@ class TechnicalService:
         identity: Optional[str],
         category: str
     ) -> str:
-        """Formulate a targeted high-precision technical search query."""
+        """Formulate a targeted high-precision technical search query or clean general search."""
+        if intent == "GENERAL_WEB":
+            # For general everyday queries, send the user's query 100% clean and untouched!
+            return query.strip()
+
         if intent == "CVE":
             cve_match = CVE_REGEX.search(query)
             cve_id = cve_match.group(1) if cve_match else query
@@ -215,7 +227,7 @@ class TechnicalService:
 
         # General technical query
         target_hint = f"{vendor} " if vendor else ""
-        return f"{target_hint}{query} technical documentation networking"
+        return f"{target_hint}{query} technical documentation"
 
     def get_cached_profile(self, key: str) -> Optional[Dict]:
         """Look up technical profile in cache."""
@@ -246,9 +258,13 @@ class TechnicalService:
         Analyze user query, classify intent, check/update dynamic cache, and fetch targeted web search.
         Returns: (intent, search_results)
         """
-        intent = self.classify_intent(user_query)
         vendor, identity, category = self.detect_technology(user_query)
-        
+        is_tech = bool(
+            vendor or category in ["hardware", "software"] or 
+            CVE_REGEX.search(user_query) or 
+            TECH_DOMAIN_KEYWORDS.search(user_query)
+        )
+        intent = self.classify_intent(user_query, is_technical=is_tech)
         cache_key = identity or user_query
 
         # Check if we have cached specs for this exact hardware/software when querying SPECS_EOL
@@ -258,14 +274,14 @@ class TechnicalService:
                 logger.info(f"Loaded cached technical profile for '{cache_key}'")
                 return intent, cached_data["sources"]
 
-        # Formulate specialized search query
+        # Formulate specialized search query (clean untouched query if GENERAL_WEB)
         search_q = self.build_search_query(user_query, intent, vendor, identity, category)
         logger.info(f"Executing [{intent}] search: '{search_q}'")
         
         results = await search_web(search_q, max_results=4)
         
-        # Auto-cache the technical profile if an identity was discovered
-        if results and identity:
+        # Auto-cache the technical profile if an identity was discovered and it is technical
+        if is_tech and results and identity:
             self.store_profile(identity, vendor, category, intent, results)
             logger.info(f"Auto-discovered and cached {category} profile for '{identity}'")
 

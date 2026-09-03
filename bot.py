@@ -609,27 +609,32 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         search_results = None
         wiki_info = None
 
+        is_tech = True
         # 1. Check for Flight & Travel inquiries
         if flight_service.is_flight_query(prompt):
+            is_tech = False
             logger.info(f"Identified flight schedule inquiry from chat {chat_id}: '{prompt}'")
             has_flight, search_results = await flight_service.get_flight_context(prompt)
         else:
             # 2. Check for Flavius VIP or Personal Identity inquiries
             persona_intent = persona_service.classify_persona_intent(prompt)
             if persona_intent == "FLAVIUS_VIP":
+                is_tech = False
                 logger.info(f"Identified Flavius VIP inquiry from chat {chat_id}: '{prompt}'")
                 search_results = [persona_service.get_flavius_context()]
             elif persona_intent == "PERSONAL_IDENTITY":
+                is_tech = False
                 logger.info(f"Identified personal identity query from chat {chat_id}: '{prompt}'")
                 # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
                 wiki_info = await search_wikipedia(prompt)
             else:
-                # 3. Analyze technical intent (CVE, CLI Config, Specs/EOL, General) & fetch/cache targeted info
+                # 3. Analyze technical vs general intent & fetch targeted info
                 intent, search_results = await technical_service.get_technical_context(prompt)
+                is_tech = (intent != "GENERAL_WEB")
                 if search_results:
-                    logger.info(f"Retrieved {len(search_results)} technical search sources for intent '{intent}'")
-                else:
-                    # Fallback to Wikipedia if web search yielded nothing
+                    logger.info(f"Retrieved {len(search_results)} search sources for intent '{intent}' (is_tech={is_tech})")
+                elif intent == "GENERAL_WEB":
+                    # Fallback to Wikipedia only for general web queries when search yielded nothing
                     wiki_info = await search_wikipedia(prompt)
                     if wiki_info:
                         logger.info(f"Found Wikipedia reference: '{wiki_info['title']}' ({wiki_info['url']})")
@@ -638,7 +643,8 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             prompt,
             context_messages=context_msgs,
             wiki_info=wiki_info,
-            search_results=search_results
+            search_results=search_results,
+            is_technical=is_tech
         )
 
         try:
