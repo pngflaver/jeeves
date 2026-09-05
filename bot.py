@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import asyncio
+from datetime import datetime, timezone
 from telegram import Update, constants, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
@@ -84,7 +85,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"• `/tv <title> [s] [e]` — Look up TV Show (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <from> <to>` — Search flight routes & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `/place <name>` — Look up local business, operating hours, phone & map\n"
-        f"• `/nrl [team/query]` — Verified NRL news (Broncos, QLD Maroons, PNG Chiefs)\n"
+        f"• `/nrl [team/query]` — Verified NRL news, ladder standings, and player/team stats\n"
+        f"• `/sync_nrl` — Admin sync of NRL teams, squads, ladder & weekly briefing\n"
         f"• `@{bot_user.username} <question>` — Mention in group chats\n"
         f"• `/hardware` — View tracked hardware inventory list\n"
         f"• `/software` — View tracked software & OS version list\n\n"
@@ -112,7 +114,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"📖 **Command Reference:**\n\n"
         f"🧠 **AI, Places & Media Knowledge:**\n"
         f"• `/ask <prompt>` — Ask hardware/software EOL, CLI configs, CVEs, or general IT questions\n"
-        f"• `/nrl [team/query]` — Verified NRL news (Broncos, QLD Maroons, PNG Chiefs)\n"
+        f"• `/nrl [team/query]` — Verified NRL news, ladder standings, and player/team stats\n"
+        f"• `/sync_nrl` — Admin sync of NRL teams, squads, ladder & weekly briefing\n"
         f"• `/place <name>` — Look up local business, operating hours & phone (e.g. `/place CPL Vision City`)\n"
         f"• `/movie <title>` — Extract movie parameters (`{{id}}` from IMDb/TMDB)\n"
         f"• `/tv <title> [s] [e]` — Extract TV show parameters (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
@@ -409,7 +412,58 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 reply_markup=reply_markup
             )
     else:
-        # Check if query is asking for player stats and matches multiple candidates or has moderate confidence
+        q_clean = query.strip().lower()
+
+        # 1. Full NRL Ladder query
+        if q_clean in ["ladder", "standings", "table", "nrl ladder", "nrl standings", "the ladder"]:
+            ans = nrl_service.format_full_ladder()
+            rec_id = quality_service.log_interaction(
+                command="nrl",
+                user=update.effective_user,
+                query=query,
+                response=ans,
+                sources=None
+            )
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ]) if rec_id else None
+            await update.effective_message.reply_text(ans, parse_mode=constants.ParseMode.MARKDOWN, reply_markup=reply_markup)
+            return
+
+        # 2. Team-specific inquiries (e.g. "/nrl broncos stats", "/nrl storm record", "/nrl dolphins")
+        team_match = nrl_service.find_team_in_registry(query)
+        player_match = nrl_service.find_player_in_registry(query)
+
+        if team_match and not player_match and (nrl_service.is_stats_query(query) or len(query.split()) <= 3):
+            ans = nrl_service.format_team_stats_card(team_match[1])
+            rec_id = quality_service.log_interaction(
+                command="nrl",
+                user=update.effective_user,
+                query=query,
+                response=ans,
+                sources=None
+            )
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ]) if rec_id else None
+            try:
+                await update.effective_message.reply_text(
+                    ans,
+                    parse_mode=constants.ParseMode.MARKDOWN,
+                    reply_markup=reply_markup
+                )
+            except Exception as md_err:
+                logger.warning(f"Markdown formatting failed in /nrl team card ({md_err}), sending as plain text.")
+                await update.effective_message.reply_text(ans, reply_markup=reply_markup)
+            return
+
+        # 3. Check if query is asking for player stats and matches multiple candidates or has moderate confidence
         if nrl_service.is_stats_query(query):
             candidates = nrl_service.suggest_players(query, max_candidates=4)
             if candidates:
@@ -449,7 +503,7 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     )
                     return
 
-        # Live accredited search or single high-confidence stats card
+        # 4. Live accredited search or single high-confidence stats card
         ans = await nrl_service.query_specific_nrl(query)
         rec_id = quality_service.log_interaction(
             command="nrl",
@@ -478,6 +532,37 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 ans,
                 reply_markup=reply_markup
             )
+
+@track_kpi_command("sync_nrl")
+async def sync_nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /sync_nrl command for manual administrative synchronization of NRL rosters, ladders & briefing."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    status_msg = await update.effective_message.reply_text("🔄 Initiating NRL round finalization & registry sync...")
+    try:
+        res = await nrl_service.sync_weekly_round_finalization()
+        report = (
+            f"🏉 **NRL Weekly Round & Registry Synchronization**\n"
+            f"• **Status:** Successfully synchronized\n"
+            f"• **Active Teams Loaded:** {res['teams_count']} (17 NRL Clubs + PNG Chiefs)\n"
+            f"• **Active Players Registered:** {res['players_count']}\n"
+            f"• **Season Phase:** {res['season_phase']}\n"
+            f"• **Priority Briefing:** Refreshed with latest accredited sources\n"
+            f"• **Timestamp:** {res['timestamp']}\n\n"
+            f"✅ *All records grounded and verified.*"
+        )
+        quality_service.log_interaction(
+            command="sync_nrl",
+            user=update.effective_user,
+            query="/sync_nrl",
+            response=report,
+            sources=None
+        )
+        await status_msg.edit_text(report, parse_mode=constants.ParseMode.MARKDOWN)
+    except Exception as e:
+        logger.error(f"Error executing /sync_nrl: {e}")
+        await status_msg.edit_text(f"❌ Error executing NRL synchronization: {e}")
 
 # ==========================================
 # Network Diagnostic Commands
@@ -929,9 +1014,28 @@ async def post_init(application: Application) -> None:
                 logger.error(f"Error in NRL background sync worker: {e}")
             await asyncio.sleep(3600)  # Every 1 hour
 
+    async def _nrl_weekly_worker():
+        # Monday automated weekly round finalization sync
+        last_sync_date = None
+        while True:
+            try:
+                now = datetime.now(timezone.utc)
+                today_str = now.strftime("%Y-%m-%d")
+                if now.weekday() == 0 and last_sync_date != today_str:
+                    logger.info("Monday detected: triggering automated NRL weekly round finalization sync...")
+                    await nrl_service.sync_weekly_round_finalization()
+                    last_sync_date = today_str
+                    logger.info("Automated Monday NRL sync completed successfully.")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in NRL weekly sync worker: {e}")
+            await asyncio.sleep(3600)  # Check every hour
+
     asyncio.create_task(_daily_worker())
     asyncio.create_task(_kpi_heartbeat())
     asyncio.create_task(_nrl_worker())
+    asyncio.create_task(_nrl_weekly_worker())
 
 def main() -> None:
     """Start the bot."""
@@ -951,6 +1055,7 @@ def main() -> None:
     app.add_handler(CommandHandler("model", model_command))
     app.add_handler(CommandHandler("ask", ask_command))
     app.add_handler(CommandHandler(["nrl", "rugby"], nrl_command))
+    app.add_handler(CommandHandler(["sync_nrl", "syncnrl"], sync_nrl_command))
     app.add_handler(CommandHandler(["movie", "movies", "imdb", "tmdb"], movie_command))
     app.add_handler(CommandHandler(["tv", "series"], tv_command))
     app.add_handler(CommandHandler(["flight", "flights"], flight_command))

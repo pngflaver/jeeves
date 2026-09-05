@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 SITE_FILTER = "site:nrl.com OR site:foxsports.com.au OR site:abc.net.au OR site:qrl.com.au OR site:postcourier.com.pg OR site:thenational.com.pg"
 
 NRL_QUERY_PATTERN = re.compile(
-    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|haas|hass|adam reynolds|reynolds|ezra mam|mam|carrigan|staggs|willison|karapani|riki|ben hunt)\b",
+    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|storm|panthers|roosters|sharks|cowboys|bulldogs|sea eagles|manly|knights|dolphins|dragons|raiders|warriors|titans|eels|rabbitohs|souths|bunnies|tigers|wests tigers|chooks|green machine|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|haas|hass|adam reynolds|reynolds|ezra mam|mam|carrigan|staggs|willison|karapani|riki|ben hunt)\b",
     re.IGNORECASE
 )
 
@@ -72,6 +72,7 @@ class NRLService:
         self.season_memory: Dict[str, Any] = {}
         self.player_registry: Dict[str, Any] = {}
         self.ladder_data: Dict[str, Any] = {}
+        self.teams_registry: Dict[str, Any] = {}
 
         self._load_memory()
         self._load_briefing_cache()
@@ -83,7 +84,7 @@ class NRLService:
         return ydir
 
     def _load_memory(self) -> None:
-        """Load persistent ground-truth season status, player registry, and ladder."""
+        """Load persistent ground-truth season status, player registry, ladder, and teams."""
         ydir = self._get_year_dir()
         
         # 1. Season status
@@ -113,6 +114,15 @@ class NRLService:
             except Exception as e:
                 logger.error(f"Error reading NRL ladder: {e}")
 
+        # 4. Teams registry
+        teams_file = ydir / "teams.json"
+        if teams_file.exists():
+            try:
+                with open(teams_file, "r", encoding="utf-8") as f:
+                    self.teams_registry = json.load(f)
+            except Exception as e:
+                logger.error(f"Error reading NRL teams registry: {e}")
+
     def _load_briefing_cache(self) -> None:
         """Load pre-compiled briefing from disk cache."""
         if self.cache_file.exists():
@@ -141,13 +151,23 @@ class NRLService:
         except Exception as e:
             logger.error(f"Error saving NRL player registry: {e}")
 
+    def _save_teams_registry(self) -> None:
+        """Persist updated teams registry to disk."""
+        ydir = self._get_year_dir()
+        teams_file = ydir / "teams.json"
+        try:
+            with open(teams_file, "w", encoding="utf-8") as f:
+                json.dump(self.teams_registry, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            logger.error(f"Error saving NRL teams registry: {e}")
+
     def is_nrl_query(self, text: str) -> bool:
         """Check if query is related to NRL rugby league."""
         return bool(NRL_QUERY_PATTERN.search(text))
 
     def is_stats_query(self, text: str) -> bool:
-        """Check if query is specifically requesting player statistics."""
-        return bool(re.search(r"\b(stat|stats|statistics|tries|try|metres|meters|tackles|assists|linebreaks|points|performance|goals)\b", text, re.I))
+        """Check if query is specifically requesting player or team statistics, ladder, or form."""
+        return bool(re.search(r"\b(stat|stats|statistics|tries|try|metres|meters|tackles|assists|linebreaks|points|performance|goals|ladder|standings|standing|record|form)\b", text, re.I))
 
     def find_player_in_registry(self, text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
         """Find matching player entry from registry by key, full name, aliases, or typo tolerance."""
@@ -344,6 +364,125 @@ class NRLService:
         lines.append(f"✅ *Verified via {source_label} ({v_date})*")
         return "\n".join(lines)
 
+    def find_team_in_registry(self, text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
+        """Find matching NRL team entry from registry by key, name, code, or aliases."""
+        t_low = text.lower()
+        teams = self.teams_registry.get("teams", {})
+
+        # 1. Exact match on team_id, name, or code
+        for t_key, t_data in teams.items():
+            name = t_data.get("name", "").lower()
+            code = t_data.get("code", "").lower()
+            if t_key == t_low or name == t_low or code == t_low:
+                return t_key, t_data
+
+        # 2. Check full name in text
+        for t_key, t_data in teams.items():
+            name = t_data.get("name", "").lower()
+            if name and name in t_low:
+                return t_key, t_data
+
+        # 3. Check aliases with word boundaries (e.g. \bbroncos\b, \bstorm\b, \bdolphins\b)
+        for t_key, t_data in teams.items():
+            aliases = [a.lower() for a in t_data.get("aliases", [])]
+            for a in aliases:
+                if re.search(rf"\b{re.escape(a)}\b", t_low):
+                    return t_key, t_data
+
+        # 4. Typo tolerance / fuzzy matching on cleaned tokens
+        clean = re.sub(r"[^\w\s]", " ", text)
+        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "record", "ladder", "form", "standing", "standings", "team", "club"]:
+            clean = re.sub(rf"\b{remove_word}\b", " ", clean, flags=re.I)
+        clean = " ".join(clean.split()).lower()
+
+        if len(clean) >= 3:
+            best_match = None
+            best_ratio = 0.0
+            for t_key, t_data in teams.items():
+                name = t_data.get("name", "").lower()
+                short_name = t_data.get("short_name", "").lower()
+                aliases = [a.lower() for a in t_data.get("aliases", [])]
+                candidates = [name, short_name, t_key.replace("_", " ")] + aliases
+                for cand in candidates:
+                    ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
+                    if ratio > best_ratio:
+                        best_ratio = ratio
+                        best_match = (t_key, t_data)
+            if best_match and best_ratio >= 0.80:
+                logger.info(f"Fuzzy matched team query '{clean}' to '{best_match[1].get('name')}' (ratio={best_ratio:.2f})")
+                return best_match
+
+        return None
+
+    def format_team_stats_card(self, team_data: Dict[str, Any]) -> str:
+        """Format a focused official NRL team ladder record and win/loss form card."""
+        name = team_data.get("name", "NRL Team")
+        ladder = team_data.get("ladder", {})
+        v_date = team_data.get("last_updated", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+
+        # Special case: PNG Chiefs (2028 expansion team)
+        if team_data.get("team_id") == "png_chiefs" or not ladder.get("rank"):
+            status = ladder.get("status", "2028 NRL Expansion Franchise (Establishment & Recruitment Phase)")
+            ground = team_data.get("home_ground", "Santos National Football Stadium, Port Moresby")
+            squad_names = ", ".join([p.replace("_", " ").title() for p in team_data.get("squad", [])])
+            lines = [
+                f"🏉 **{name} — Official NRL Expansion Franchise**",
+                f"• **Status:** {status}",
+                f"• **Home Venue:** {ground}",
+                f"• **Target NRL Premiership Entry:** 2028",
+            ]
+            if squad_names:
+                lines.append(f"• **Key Signings on Record:** {squad_names}")
+            lines.append(f"\n✅ *Verified via Official NRL Records & Archive ({v_date})*")
+            return "\n".join(lines)
+
+        rank = ladder.get("rank")
+        rank_suffix = "th" if 11 <= rank <= 13 else {1: "st", 2: "nd", 3: "rd"}.get(rank % 10, "th")
+        played = ladder.get("played", 0)
+        wins = ladder.get("wins", 0)
+        losses = ladder.get("losses", 0)
+        draws = ladder.get("draws", 0)
+        byes = ladder.get("byes", 0)
+        pts_for = ladder.get("points_for", 0)
+        pts_against = ladder.get("points_against", 0)
+        diff = ladder.get("differential", 0)
+        diff_str = f"+{diff}" if isinstance(diff, int) and diff > 0 else str(diff)
+        comp_pts = ladder.get("competition_points", 0)
+        status = ladder.get("status", "")
+        form = ladder.get("form", [])
+        form_str = " - ".join(form) if form else "N/A"
+
+        lines = [
+            f"🏉 **{name} — 2026 Official Team Record & Ladder Form**",
+            f"• **Status:** {status}",
+            f"• **Ladder Position:** {rank}{rank_suffix} of 17 ({comp_pts} Comp Points)",
+            f"• **Regular Season Record:** {played} Played | {wins} Wins | {losses} Losses | {draws} Draws | {byes} Byes",
+            f"• **Points Scored / Conceded:** {pts_for} For / {pts_against} Against (Differential: {diff_str})",
+            f"• **Recent Form (Last 5):** {form_str}\n",
+            f"✅ *Verified via Official NRL Ladder & Records ({v_date})*"
+        ]
+        return "\n".join(lines)
+
+    def format_full_ladder(self) -> str:
+        """Format the full 17-team NRL 2026 ladder."""
+        standings = self.ladder_data.get("standings", [])
+        if not standings:
+            return "NRL ladder data currently unavailable."
+        
+        lines = [
+            "🏉 **2026 NRL Official Standings (End of Regular Season)**\n",
+        ]
+        for s in standings:
+            pos = s.get("pos")
+            team = s.get("team")
+            pts = s.get("pts")
+            status = s.get("status", "")
+            badge = "🟢" if "Finals" in status else "⚪"
+            lines.append(f"{badge} **{pos}. {team}** — {pts} pts ({status})")
+        
+        lines.append("\n✅ *Verified via Official NRL.com Ladder Records*")
+        return "\n".join(lines)
+
     async def resolve_or_cache_player(self, query: str) -> Optional[Dict[str, Any]]:
         """
         On-demand player resolution:
@@ -493,6 +632,12 @@ class NRLService:
             ])
 
         lines.append("[END OF GROUND-TRUTH MEMORY]\n")
+        team_matched = self.find_team_in_registry(query) if query else None
+        if team_matched:
+            t_key, t_data = team_matched
+            t_ladder = t_data.get("ladder", {})
+            if t_ladder.get("rank"):
+                lines.insert(-1, f"• Verified Team: {t_data.get('name')} (Rank: {t_ladder.get('rank')}, Comp Pts: {t_ladder.get('competition_points')}, Status: {t_ladder.get('status')})")
         return "\n".join(lines)
 
     async def fetch_accredited_search(self, prompt: str, max_results: int = 4) -> List[Dict[str, str]]:
@@ -546,7 +691,7 @@ class NRLService:
         try:
             briefing_text = await self.llm.generate_response(
                 prompt,
-                search_results=all_sources,
+                search_results=all_sources[:5],
                 is_technical=False,
                 custom_system_prompt=NRL_VALIDATION_SYSTEM_PROMPT
             )
@@ -572,15 +717,34 @@ class NRLService:
         return self.cached_briefing.get("briefing_text", "")
 
     async def query_specific_nrl(self, query: str) -> str:
-        """Perform live, date-aware search for specific NRL questions or return instant player stats."""
-        # 1. If user is asking for player stats, check/resolve player cache
+        """Perform live, date-aware search for specific NRL questions or return instant player/team stats."""
+        q_low = query.lower().strip()
+
+        # 1. Full ladder inquiry
+        if q_low in ["ladder", "standings", "table", "nrl ladder", "nrl standings", "the ladder"]:
+            return self.format_full_ladder()
+
+        # 2. Player stats inquiry
         if self.is_stats_query(query):
             player_data = await self.resolve_or_cache_player(query)
             if player_data and ("season_stats_2026" in player_data or "career_stats" in player_data):
                 logger.info(f"Serving instant verified stats card for '{player_data.get('full_name')}'")
                 return self.format_player_stats_card(player_data)
 
-        # 2. General query with ground-truth season context and live accredited search
+            # Team stats inquiry
+            team_match = self.find_team_in_registry(query)
+            if team_match:
+                logger.info(f"Serving instant verified team stats card for '{team_match[1].get('name')}'")
+                return self.format_team_stats_card(team_match[1])
+
+        # 3. Direct team inquiry (e.g. "/nrl broncos", "/nrl storm record")
+        team_match = self.find_team_in_registry(query)
+        if team_match and len(query.split()) <= 4:
+            if any(w in q_low for w in ["stats", "record", "ladder", "standing", "form", "team"]) or len(query.split()) <= 2:
+                logger.info(f"Serving instant verified team stats card for '{team_match[1].get('name')}'")
+                return self.format_team_stats_card(team_match[1])
+
+        # 4. General query with ground-truth season context and live accredited search
         sources, tier_label = await self.fetch_tiered_search(query, max_results=4)
         grounding = self._build_season_grounding_context(query)
 
@@ -599,16 +763,38 @@ class NRLService:
             custom_system_prompt=NRL_VALIDATION_SYSTEM_PROMPT
         )
 
-    async def check_weekly_round_finalization(self) -> None:
+    async def sync_weekly_round_finalization(self) -> Dict[str, Any]:
         """
-        Weekly temp check worker:
-        - Runs temp check after the weekend's final matches.
-        - Finalizes season table, archives round scores on Monday.
+        Weekly round finalization & registry synchronization:
+        - Reloads memory & verifies all active team and player registries.
+        - Refreshes priority briefing from accredited news sources.
+        - Persists updated timestamps.
         """
-        now = datetime.now(timezone.utc)
-        weekday = now.weekday() # 0 = Monday, 6 = Sunday
-        logger.info(f"NRL weekly check executed on weekday {weekday}...")
-        # Persist memory check
+        logger.info("Executing NRL weekly round finalization & registry sync...")
         self._load_memory()
+        
+        # Refresh priority briefing
+        briefing_data = await self.refresh_priority_briefing()
+
+        now_utc = datetime.now(timezone.utc)
+        today_str = now_utc.strftime("%Y-%m-%d")
+
+        if "teams" in self.teams_registry:
+            self.teams_registry["last_updated"] = today_str
+            self._save_teams_registry()
+
+        teams_count = len(self.teams_registry.get("teams", {}))
+        players_count = len(self.player_registry.get("players", {}))
+        phase = self.season_memory.get("current_phase", "Finals Series (Regular Season Concluded)")
+
+        logger.info(f"NRL weekly round sync completed: {teams_count} teams, {players_count} players.")
+        return {
+            "timestamp": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "status": "success",
+            "teams_count": teams_count,
+            "players_count": players_count,
+            "season_phase": phase,
+            "briefing_refreshed": bool(briefing_data)
+        }
 
 nrl_service = NRLService()

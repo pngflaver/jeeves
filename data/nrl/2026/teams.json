@@ -1,0 +1,766 @@
+{
+  "year": 2026,
+  "last_updated": "2026-09-05",
+  "teams": {
+    "melbourne_storm": {
+      "team_id": "melbourne_storm",
+      "name": "Melbourne Storm",
+      "short_name": "Storm",
+      "code": "MEL",
+      "aliases": [
+        "storm",
+        "melbourne",
+        "melbourne storm"
+      ],
+      "home_ground": "AAMI Park, Melbourne",
+      "coach": "Craig Bellamy",
+      "ladder": {
+        "rank": 1,
+        "played": 24,
+        "wins": 19,
+        "losses": 5,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 692,
+        "points_against": 440,
+        "differential": "+252",
+        "competition_points": 44,
+        "form": [
+          "W",
+          "W",
+          "W",
+          "W",
+          "W"
+        ],
+        "status": "Finals - Major Semi (Minor Premiers)"
+      },
+      "squad": [
+        "jahrome_hughes",
+        "cameron_munster",
+        "harry_grant",
+        "ryan_papenhuyzen",
+        "xavier_coates"
+      ],
+      "source": "official"
+    },
+    "penrith_panthers": {
+      "team_id": "penrith_panthers",
+      "name": "Penrith Panthers",
+      "short_name": "Panthers",
+      "code": "PEN",
+      "aliases": [
+        "panthers",
+        "penrith",
+        "penrith panthers"
+      ],
+      "home_ground": "BlueBet Stadium, Penrith",
+      "coach": "Ivan Cleary",
+      "ladder": {
+        "rank": 2,
+        "played": 24,
+        "wins": 17,
+        "losses": 7,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 580,
+        "points_against": 394,
+        "differential": "+186",
+        "competition_points": 40,
+        "form": [
+          "W",
+          "W",
+          "L",
+          "W",
+          "W"
+        ],
+        "status": "Finals - Major Semi"
+      },
+      "squad": [
+        "nathan_cleary",
+        "isaah_yeo",
+        "dylan_edwards",
+        "brian_to'o",
+        "moses_leota"
+      ],
+      "source": "official"
+    },
+    "sydney_roosters": {
+      "team_id": "sydney_roosters",
+      "name": "Sydney Roosters",
+      "short_name": "Roosters",
+      "code": "SYD",
+      "aliases": [
+        "roosters",
+        "sydney roosters",
+        "chooks",
+        "easts"
+      ],
+      "home_ground": "Allianz Stadium, Sydney",
+      "coach": "Trent Robinson",
+      "ladder": {
+        "rank": 3,
+        "played": 24,
+        "wins": 16,
+        "losses": 8,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 738,
+        "points_against": 463,
+        "differential": "+275",
+        "competition_points": 38,
+        "form": [
+          "W",
+          "L",
+          "W",
+          "W",
+          "W"
+        ],
+        "status": "Finals - Qualifying"
+      },
+      "squad": [
+        "james_tedesco",
+        "sam_walker",
+        "victor_radley",
+        "lindsay_collins",
+        "dom_young"
+      ],
+      "source": "official"
+    },
+    "cronulla_sharks": {
+      "team_id": "cronulla_sharks",
+      "name": "Cronulla Sharks",
+      "short_name": "Sharks",
+      "code": "CRO",
+      "aliases": [
+        "sharks",
+        "cronulla",
+        "cronulla sharks",
+        "cronulla-sutherland sharks"
+      ],
+      "home_ground": "PointsBet Stadium, Woolooware",
+      "coach": "Craig Fitzgibbon",
+      "ladder": {
+        "rank": 4,
+        "played": 24,
+        "wins": 16,
+        "losses": 8,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 573,
+        "points_against": 431,
+        "differential": "+142",
+        "competition_points": 38,
+        "form": [
+          "W",
+          "W",
+          "W",
+          "L",
+          "W"
+        ],
+        "status": "Finals - Qualifying"
+      },
+      "squad": [
+        "nicho_hynes",
+        "blayke_brailey",
+        "cameron_mcinnes",
+        "will_kennedy",
+        "ronaldo_mulitalo"
+      ],
+      "source": "official"
+    },
+    "north_queensland_cowboys": {
+      "team_id": "north_queensland_cowboys",
+      "name": "North Queensland Cowboys",
+      "short_name": "Cowboys",
+      "code": "NQL",
+      "aliases": [
+        "cowboys",
+        "north queensland cowboys",
+        "nq cowboys",
+        "north queensland"
+      ],
+      "home_ground": "Queensland Country Bank Stadium, Townsville",
+      "coach": "Todd Payten",
+      "ladder": {
+        "rank": 5,
+        "played": 24,
+        "wins": 15,
+        "losses": 9,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 657,
+        "points_against": 568,
+        "differential": "+89",
+        "competition_points": 36,
+        "form": [
+          "W",
+          "W",
+          "W",
+          "W",
+          "L"
+        ],
+        "status": "Finals - Elimination"
+      },
+      "squad": [
+        "scott_drinkwater",
+        "tom_dearden",
+        "reuben_cotter",
+        "valentine_holmes",
+        "jeremiah_nanai"
+      ],
+      "source": "official"
+    },
+    "canterbury_bulldogs": {
+      "team_id": "canterbury_bulldogs",
+      "name": "Canterbury Bulldogs",
+      "short_name": "Bulldogs",
+      "code": "CBY",
+      "aliases": [
+        "bulldogs",
+        "canterbury",
+        "canterbury bulldogs",
+        "doggies",
+        "canterbury-bankstown bulldogs"
+      ],
+      "home_ground": "Accor Stadium & Belmore Sports Ground",
+      "coach": "Cameron Ciraldo",
+      "ladder": {
+        "rank": 6,
+        "played": 24,
+        "wins": 14,
+        "losses": 10,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 529,
+        "points_against": 433,
+        "differential": "+96",
+        "competition_points": 34,
+        "form": [
+          "L",
+          "L",
+          "W",
+          "W",
+          "W"
+        ],
+        "status": "Finals - Elimination"
+      },
+      "squad": [
+        "stephen_crichton",
+        "matt_burton",
+        "viliame_kikau",
+        "reed_mahoney",
+        "jacob_kiraz"
+      ],
+      "source": "official"
+    },
+    "manly_sea_eagles": {
+      "team_id": "manly_sea_eagles",
+      "name": "Manly Sea Eagles",
+      "short_name": "Sea Eagles",
+      "code": "MAN",
+      "aliases": [
+        "sea eagles",
+        "manly",
+        "manly sea eagles",
+        "manly-warringah sea eagles"
+      ],
+      "home_ground": "4 Pines Park, Brookvale",
+      "coach": "Anthony Seibold",
+      "ladder": {
+        "rank": 7,
+        "played": 24,
+        "wins": 13,
+        "losses": 10,
+        "draws": 1,
+        "byes": 3,
+        "points_for": 634,
+        "points_against": 521,
+        "differential": "+113",
+        "competition_points": 33,
+        "form": [
+          "L",
+          "W",
+          "W",
+          "L",
+          "W"
+        ],
+        "status": "Finals - Elimination"
+      },
+      "squad": [
+        "tom_trbojevic",
+        "daly_cherry-evans",
+        "haumole_olaka'atu",
+        "jake_trbojevic",
+        "tolutau_koula"
+      ],
+      "source": "official"
+    },
+    "newcastle_knights": {
+      "team_id": "newcastle_knights",
+      "name": "Newcastle Knights",
+      "short_name": "Knights",
+      "code": "NEW",
+      "aliases": [
+        "knights",
+        "newcastle",
+        "newcastle knights"
+      ],
+      "home_ground": "McDonald Jones Stadium, Newcastle",
+      "coach": "Adam O'Brien",
+      "ladder": {
+        "rank": 8,
+        "played": 24,
+        "wins": 12,
+        "losses": 12,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 470,
+        "points_against": 510,
+        "differential": "-40",
+        "competition_points": 32,
+        "form": [
+          "W",
+          "W",
+          "W",
+          "W",
+          "L"
+        ],
+        "status": "Finals - Elimination"
+      },
+      "squad": [
+        "kalyn_ponga",
+        "bradman_best",
+        "dane_gagai",
+        "phoenix_crossland",
+        "tyson_frizell"
+      ],
+      "source": "official"
+    },
+    "the_dolphins": {
+      "team_id": "the_dolphins",
+      "name": "The Dolphins",
+      "short_name": "Dolphins",
+      "code": "DOL",
+      "aliases": [
+        "dolphins",
+        "the dolphins",
+        "redcliffe dolphins",
+        "redcliffe"
+      ],
+      "home_ground": "Kayo Stadium & Suncorp Stadium",
+      "coach": "Kristian Woolf",
+      "ladder": {
+        "rank": 9,
+        "played": 24,
+        "wins": 11,
+        "losses": 13,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 577,
+        "points_against": 578,
+        "differential": "-1",
+        "competition_points": 30,
+        "form": [
+          "W",
+          "L",
+          "L",
+          "L",
+          "W"
+        ],
+        "status": "Eliminated (9th place - missed finals by 2 pts)"
+      },
+      "squad": [
+        "selwyn_cobbo",
+        "hamiso_tabuai-fidow",
+        "herbie_farnworth",
+        "kodi_nikorima",
+        "isaiya_katoa",
+        "tom_flegler"
+      ],
+      "source": "official"
+    },
+    "st_george_illawarra_dragons": {
+      "team_id": "st_george_illawarra_dragons",
+      "name": "St George Illawarra Dragons",
+      "short_name": "Dragons",
+      "code": "SGI",
+      "aliases": [
+        "dragons",
+        "st george",
+        "st george illawarra",
+        "st george illawarra dragons",
+        "saints"
+      ],
+      "home_ground": "WIN Stadium & Netstrata Jubilee Stadium",
+      "coach": "Shane Flanagan",
+      "ladder": {
+        "rank": 10,
+        "played": 24,
+        "wins": 11,
+        "losses": 13,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 508,
+        "points_against": 634,
+        "differential": "-126",
+        "competition_points": 28,
+        "form": [
+          "L",
+          "L",
+          "W",
+          "L",
+          "W"
+        ],
+        "status": "Eliminated (10th place)"
+      },
+      "squad": [
+        "ben_hunt",
+        "tyrell_sloan",
+        "jaydn_su'a",
+        "zac_lomax",
+        "kyle_flanagan"
+      ],
+      "source": "official"
+    },
+    "canberra_raiders": {
+      "team_id": "canberra_raiders",
+      "name": "Canberra Raiders",
+      "short_name": "Raiders",
+      "code": "CAN",
+      "aliases": [
+        "raiders",
+        "canberra",
+        "canberra raiders",
+        "green machine"
+      ],
+      "home_ground": "GIO Stadium, Canberra",
+      "coach": "Ricky Stuart",
+      "ladder": {
+        "rank": 11,
+        "played": 24,
+        "wins": 10,
+        "losses": 14,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 474,
+        "points_against": 601,
+        "differential": "-127",
+        "competition_points": 28,
+        "form": [
+          "W",
+          "W",
+          "L",
+          "L",
+          "L"
+        ],
+        "status": "Eliminated (11th place)"
+      },
+      "squad": [
+        "joseph_tapine",
+        "jamal_fogarty",
+        "hudson_young",
+        "matthew_timoko",
+        "xavier_savage"
+      ],
+      "source": "official"
+    },
+    "brisbane_broncos": {
+      "team_id": "brisbane_broncos",
+      "name": "Brisbane Broncos",
+      "short_name": "Broncos",
+      "code": "BRI",
+      "aliases": [
+        "broncos",
+        "brisbane",
+        "brisbane broncos"
+      ],
+      "home_ground": "Suncorp Stadium, Brisbane",
+      "coach": "Kevin Walters",
+      "ladder": {
+        "rank": 12,
+        "played": 24,
+        "wins": 10,
+        "losses": 14,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 532,
+        "points_against": 610,
+        "differential": "-78",
+        "competition_points": 26,
+        "form": [
+          "W",
+          "L",
+          "L",
+          "W",
+          "W"
+        ],
+        "status": "Eliminated (No finals, season ended)"
+      },
+      "squad": [
+        "adam_reynolds",
+        "payne_haas",
+        "reece_walsh",
+        "ezra_mam",
+        "patrick_carrigan",
+        "kotoni_staggs",
+        "kobe_hetherington",
+        "xavier_willison",
+        "corey_jensen",
+        "jordan_riki",
+        "deuteronomy_tauauvea",
+        "corey_oates",
+        "billy_walters",
+        "blake_mozer",
+        "joshua_rogers",
+        "jesse_arthars",
+        "martin_taupau",
+        "fletcher_baker",
+        "jaiyden_hunt",
+        "delouise_hoeter"
+      ],
+      "source": "official"
+    },
+    "new_zealand_warriors": {
+      "team_id": "new_zealand_warriors",
+      "name": "New Zealand Warriors",
+      "short_name": "Warriors",
+      "code": "NZW",
+      "aliases": [
+        "warriors",
+        "new zealand warriors",
+        "nz warriors"
+      ],
+      "home_ground": "Go Media Stadium, Auckland",
+      "coach": "Andrew Webster",
+      "ladder": {
+        "rank": 13,
+        "played": 24,
+        "wins": 9,
+        "losses": 14,
+        "draws": 1,
+        "byes": 3,
+        "points_for": 512,
+        "points_against": 574,
+        "differential": "-62",
+        "competition_points": 24,
+        "form": [
+          "L",
+          "L",
+          "L",
+          "W",
+          "L"
+        ],
+        "status": "Eliminated (13th place)"
+      },
+      "squad": [
+        "shaun_johnson",
+        "charnze_nicoll-klokstad",
+        "tohu_harris",
+        "addin_fonua-blake",
+        "dallin_watene-zelezniak"
+      ],
+      "source": "official"
+    },
+    "gold_coast_titans": {
+      "team_id": "gold_coast_titans",
+      "name": "Gold Coast Titans",
+      "short_name": "Titans",
+      "code": "GLD",
+      "aliases": [
+        "titans",
+        "gold coast",
+        "gold coast titans"
+      ],
+      "home_ground": "Cbus Super Stadium, Robina",
+      "coach": "Des Hasler",
+      "ladder": {
+        "rank": 14,
+        "played": 24,
+        "wins": 8,
+        "losses": 16,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 488,
+        "points_against": 656,
+        "differential": "-168",
+        "competition_points": 22,
+        "form": [
+          "L",
+          "L",
+          "L",
+          "L",
+          "W"
+        ],
+        "status": "Eliminated (14th place)"
+      },
+      "squad": [
+        "david_fifita",
+        "tino_fa'asuamaleaui",
+        "aj_brimson",
+        "kieran_foran",
+        "jayden_campbell"
+      ],
+      "source": "official"
+    },
+    "parramatta_eels": {
+      "team_id": "parramatta_eels",
+      "name": "Parramatta Eels",
+      "short_name": "Eels",
+      "code": "PAR",
+      "aliases": [
+        "eels",
+        "parramatta",
+        "parramatta eels"
+      ],
+      "home_ground": "CommBank Stadium, Parramatta",
+      "coach": "Jason Ryles",
+      "ladder": {
+        "rank": 15,
+        "played": 24,
+        "wins": 7,
+        "losses": 17,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 561,
+        "points_against": 716,
+        "differential": "-155",
+        "competition_points": 20,
+        "form": [
+          "W",
+          "L",
+          "L",
+          "L",
+          "L"
+        ],
+        "status": "Eliminated (15th place)"
+      },
+      "squad": [
+        "mitchell_moses",
+        "clint_gutherson",
+        "dylan_brown",
+        "junior_paulo",
+        "will_penisini"
+      ],
+      "source": "official"
+    },
+    "south_sydney_rabbitohs": {
+      "team_id": "south_sydney_rabbitohs",
+      "name": "South Sydney Rabbitohs",
+      "short_name": "Rabbitohs",
+      "code": "SOU",
+      "aliases": [
+        "rabbitohs",
+        "souths",
+        "south sydney",
+        "south sydney rabbitohs",
+        "bunnies"
+      ],
+      "home_ground": "Accor Stadium, Sydney",
+      "coach": "Wayne Bennett",
+      "ladder": {
+        "rank": 16,
+        "played": 24,
+        "wins": 7,
+        "losses": 17,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 494,
+        "points_against": 682,
+        "differential": "-188",
+        "competition_points": 20,
+        "form": [
+          "L",
+          "L",
+          "L",
+          "L",
+          "L"
+        ],
+        "status": "Eliminated (16th place)"
+      },
+      "squad": [
+        "latrell_mitchell",
+        "cody_walker",
+        "cameron_murray",
+        "keaon_koloamatangi",
+        "jack_wighton"
+      ],
+      "source": "official"
+    },
+    "wests_tigers": {
+      "team_id": "wests_tigers",
+      "name": "Wests Tigers",
+      "short_name": "Tigers",
+      "code": "WST",
+      "aliases": [
+        "tigers",
+        "wests tigers",
+        "wests",
+        "balmain",
+        "western suburbs"
+      ],
+      "home_ground": "Leichhardt Oval & Campbelltown Stadium",
+      "coach": "Benji Marshall",
+      "ladder": {
+        "rank": 17,
+        "played": 24,
+        "wins": 6,
+        "losses": 18,
+        "draws": 0,
+        "byes": 3,
+        "points_for": 463,
+        "points_against": 750,
+        "differential": "-287",
+        "competition_points": 18,
+        "form": [
+          "L",
+          "W",
+          "L",
+          "L",
+          "L"
+        ],
+        "status": "Eliminated (17th place - Wooden Spoon)"
+      },
+      "squad": [
+        "jarome_luai",
+        "jahream_bula",
+        "api_koroisau",
+        "lachlan_galvin",
+        "stefano_utoikamanu"
+      ],
+      "source": "official"
+    },
+    "png_chiefs": {
+      "team_id": "png_chiefs",
+      "name": "PNG Chiefs",
+      "short_name": "Chiefs",
+      "code": "PNG",
+      "aliases": [
+        "png chiefs",
+        "chiefs",
+        "png nrl",
+        "papua new guinea chiefs",
+        "png"
+      ],
+      "home_ground": "Santos National Football Stadium, Port Moresby",
+      "coach": "To be appointed",
+      "ladder": {
+        "rank": null,
+        "played": 0,
+        "wins": 0,
+        "losses": 0,
+        "draws": 0,
+        "byes": 0,
+        "points_for": 0,
+        "points_against": 0,
+        "differential": "0",
+        "competition_points": 0,
+        "form": [],
+        "status": "2028 NRL Expansion Franchise (Establishment & Recruitment Phase)"
+      },
+      "squad": [
+        "joey_manu"
+      ],
+      "source": "official"
+    }
+  }
+}
