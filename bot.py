@@ -409,7 +409,47 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                 reply_markup=reply_markup
             )
     else:
-        # Live accredited search for specific inquiry
+        # Check if query is asking for player stats and matches multiple candidates or has moderate confidence
+        if nrl_service.is_stats_query(query):
+            candidates = nrl_service.suggest_players(query, max_candidates=4)
+            if candidates:
+                top_key, top_data, top_score = candidates[0]
+                is_ambiguous = (
+                    len(candidates) > 1
+                    and candidates[1][2] >= 0.80
+                    and abs(top_score - candidates[1][2]) < 0.15
+                )
+                is_moderate_confidence = (0.60 <= top_score < 0.85)
+
+                if is_ambiguous or is_moderate_confidence:
+                    clean_name = nrl_service.extract_clean_player_name(query)
+                    prompt_text = (
+                        f"❓ I found multiple potential player matches for *'{clean_name}'*.\n"
+                        f"Please select the player you intended:"
+                    )
+                    buttons = []
+                    for p_key, p_data, score in candidates[:4]:
+                        fn = p_data.get("full_name", p_key)
+                        pos = p_data.get("position", "")
+                        club = p_data.get("current_club", "NRL")
+                        btn_label = f"🏉 {fn} — {pos} ({club})" if pos else f"🏉 {fn} ({club})"
+                        buttons.append([InlineKeyboardButton(btn_label, callback_data=f"nrl_p:{p_key}")])
+
+                    quality_service.log_interaction(
+                        command="nrl",
+                        user=update.effective_user,
+                        query=query,
+                        response=f"[Disambiguation Buttons Presented for '{clean_name}']",
+                        sources=None
+                    )
+                    await update.effective_message.reply_text(
+                        prompt_text,
+                        parse_mode=constants.ParseMode.MARKDOWN,
+                        reply_markup=InlineKeyboardMarkup(buttons)
+                    )
+                    return
+
+        # Live accredited search or single high-confidence stats card
         ans = await nrl_service.query_specific_nrl(query)
         rec_id = quality_service.log_interaction(
             command="nrl",
@@ -808,6 +848,49 @@ async def quality_feedback_callback(update: Update, context: ContextTypes.DEFAUL
         except Exception as e:
             logger.warning(f"Failed to update quality feedback markup: {e}")
 
+async def nrl_player_select_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle player selection from disambiguation / typo suggestion buttons."""
+    query = update.callback_query
+    if not query:
+        return
+    data = query.data or ""
+    if data.startswith("nrl_p:"):
+        p_key = data.split(":", 1)[1]
+        player_data = nrl_service.player_registry.get("players", {}).get(p_key)
+        if not player_data:
+            await query.answer("Player record not found.")
+            return
+
+        card = nrl_service.format_player_stats_card(player_data)
+        rec_id = quality_service.log_interaction(
+            command="nrl",
+            user=update.effective_user,
+            query=f"[Selected Player] {player_data.get('full_name')}",
+            response=card,
+            sources=None
+        )
+        reply_markup = None
+        if rec_id:
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ])
+        try:
+            await query.answer()
+            await query.edit_message_text(
+                card,
+                parse_mode=constants.ParseMode.MARKDOWN,
+                reply_markup=reply_markup
+            )
+        except Exception as md_err:
+            logger.warning(f"Markdown formatting failed in player select callback ({md_err}), sending plain text.")
+            await query.edit_message_text(
+                card,
+                reply_markup=reply_markup
+            )
+
 async def post_init(application: Application) -> None:
     """Run background scheduled tasks after bot startup."""
     async def _daily_worker():
@@ -889,6 +972,9 @@ def main() -> None:
 
     # Quality Feedback Callback Handler
     app.add_handler(CallbackQueryHandler(quality_feedback_callback, pattern=r"^(qf:|none)"))
+
+    # NRL Player Disambiguation Callback Handler
+    app.add_handler(CallbackQueryHandler(nrl_player_select_callback, pattern=r"^nrl_p:"))
 
     # General Chat / Mention Message Handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))

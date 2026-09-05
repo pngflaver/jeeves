@@ -221,6 +221,69 @@ class NRLService:
 
         return None
 
+    def extract_clean_player_name(self, query: str) -> str:
+        """Extract cleaned player name from query by stripping punctuation and stop words."""
+        clean = re.sub(r"[^\w\s]", " ", query)
+        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "her", "their", "profile", "tell me about", "s"]:
+            clean = re.sub(rf"\b{remove_word}\b", " ", clean, flags=re.I)
+        return " ".join(clean.split()).strip()
+
+    def suggest_players(self, text: str, max_candidates: int = 4) -> List[Tuple[str, Dict[str, Any], float]]:
+        """
+        Find ranked player candidates for ambiguous or misspelled queries.
+        Returns a list of up to `max_candidates` tuples of (player_key, player_data, score).
+        """
+        clean = self.extract_clean_player_name(text).lower()
+        if len(clean) < 2:
+            return []
+
+        players = self.player_registry.get("players", {})
+        scored_candidates: Dict[str, Tuple[float, Dict[str, Any]]] = {}
+
+        clean_tokens = [tok for tok in clean.split() if len(tok) >= 2]
+
+        for p_key, p_data in players.items():
+            full_name = p_data.get("full_name", "").lower()
+            aliases = [a.lower() for a in p_data.get("aliases", [])]
+            candidate_strings = [full_name, p_key.replace("_", " ")] + aliases
+
+            score = 0.0
+
+            # Exact match on clean string
+            if clean == p_key or clean == full_name or clean in aliases:
+                score = max(score, 1.0)
+
+            # Whole string similarity
+            for cand in candidate_strings:
+                ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
+                score = max(score, ratio)
+
+            # Token level checks
+            cand_tokens = []
+            for cand in candidate_strings:
+                cand_tokens.extend(cand.split())
+
+            for tok in clean_tokens:
+                for ctok in cand_tokens:
+                    if tok == ctok:
+                        score = max(score, 0.90)
+                    elif len(tok) >= 4 and len(ctok) >= 4 and is_close_typo(tok, ctok):
+                        score = max(score, 0.85)
+                    elif len(tok) >= 3 and len(ctok) >= 3:
+                        t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
+                        if t_ratio >= 0.70:
+                            score = max(score, t_ratio * 0.85)
+
+            if any(clean in cand for cand in candidate_strings if len(clean) >= 3):
+                score = max(score, 0.88)
+
+            if score >= 0.60:
+                scored_candidates[p_key] = (score, p_data)
+
+        # Sort descending by score
+        sorted_candidates = sorted(scored_candidates.items(), key=lambda item: item[1][0], reverse=True)
+        return [(k, data, score) for k, (score, data) in sorted_candidates[:max_candidates]]
+
     def format_player_stats_card(self, player_data: Dict[str, Any]) -> str:
         """Format an informative, verified statistics card for an NRL player."""
         name = player_data.get("full_name", "NRL Player")
