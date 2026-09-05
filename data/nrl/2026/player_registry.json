@@ -3,9 +3,10 @@
     "adam_reynolds": {
       "full_name": "Adam Reynolds",
       "aliases": [
+        "adam",
+        "adam reynolds",
         "reyno",
-        "reynolds",
-        "adam reynolds"
+        "reynolds"
       ],
       "current_club": "Brisbane Broncos",
       "previous_club": "South Sydney Rabbitohs",
@@ -50,7 +51,8 @@
       "full_name": "Selwyn Cobbo",
       "aliases": [
         "cobbo",
-        "selwyn"
+        "selwyn",
+        "selwyn cobbo"
       ],
       "current_club": "The Dolphins",
       "previous_club": "Brisbane Broncos",
@@ -81,6 +83,7 @@
     "reece_walsh": {
       "full_name": "Reece Walsh",
       "aliases": [
+        "reece",
         "reece walsh",
         "walsh"
       ],
@@ -119,8 +122,10 @@
     "payne_haas": {
       "full_name": "Payne Haas",
       "aliases": [
-        "payne haas",
-        "haas"
+        "haas",
+        "hass",
+        "payne",
+        "payne haas"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Prop",
@@ -152,9 +157,10 @@
     "patrick_carrigan": {
       "full_name": "Patrick Carrigan",
       "aliases": [
+        "carrigan",
+        "patrick",
         "patrick carrigan",
-        "patty carrigan",
-        "carrigan"
+        "patty carrigan"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Lock / Co-Captain",
@@ -190,8 +196,8 @@
       "full_name": "Kotoni Staggs",
       "aliases": [
         "kotoni",
-        "staggs",
-        "kotoni staggs"
+        "kotoni staggs",
+        "staggs"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Centre",
@@ -227,9 +233,10 @@
     "hamiso_tabuai_fidow": {
       "full_name": "Hamiso Tabuai-Fidow",
       "aliases": [
+        "hamiso",
+        "hamiso tabuai-fidow",
         "hammer",
-        "tabuai-fidow",
-        "hamiso"
+        "tabuai-fidow"
       ],
       "current_club": "The Dolphins",
       "position": "Fullback / Centre",
@@ -257,7 +264,8 @@
       "full_name": "Herbie Farnworth",
       "aliases": [
         "farnworth",
-        "herbie"
+        "herbie",
+        "herbie farnworth"
       ],
       "current_club": "The Dolphins",
       "previous_club": "Brisbane Broncos",
@@ -284,9 +292,10 @@
     "joey_manu": {
       "full_name": "Joey Manu",
       "aliases": [
-        "manu",
+        "joey",
         "joey manu",
-        "joseph manu"
+        "joseph manu",
+        "manu"
       ],
       "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
       "previous_club": "Sydney Roosters",
@@ -305,8 +314,9 @@
     "alex_johnston": {
       "full_name": "Alex Johnston",
       "aliases": [
-        "johnston",
-        "alex johnston"
+        "alex",
+        "alex johnston",
+        "johnston"
       ],
       "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
       "previous_club": "South Sydney Rabbitohs",
@@ -324,8 +334,9 @@
     "jarome_luai": {
       "full_name": "Jarome Luai",
       "aliases": [
-        "luai",
-        "jarome"
+        "jarome",
+        "jarome luai",
+        "luai"
       ],
       "current_club": "Wests Tigers / Signed with PNG Chiefs for 2028",
       "position": "Five-Eighth / Halfback",
@@ -352,8 +363,9 @@
     "kalyn_ponga": {
       "full_name": "Kalyn Ponga",
       "aliases": [
-        "ponga",
-        "kalyn"
+        "kalyn",
+        "kalyn ponga",
+        "ponga"
       ],
       "current_club": "Newcastle Knights",
       "position": "Fullback",
@@ -384,6 +396,7 @@
       "full_name": "Xavier Willison",
       "aliases": [
         "willison",
+        "xavier",
         "xavier willison"
       ],
       "current_club": "Brisbane Broncos",
@@ -417,6 +430,7 @@
     "josiah_karapani": {
       "full_name": "Josiah Karapani",
       "aliases": [
+        "josiah",
         "josiah karapani",
         "karapani"
       ],
@@ -451,9 +465,9 @@
     "ezra_mam": {
       "full_name": "Ezra Mam",
       "aliases": [
+        "ezra",
         "ezra mam",
-        "mam",
-        "ezra"
+        "mam"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Five-Eighth",
@@ -490,6 +504,7 @@
     "jordan_riki": {
       "full_name": "Jordan Riki",
       "aliases": [
+        "jordan",
         "jordan riki",
         "riki"
       ],
@@ -525,6 +540,7 @@
     "ben_talty": {
       "full_name": "Ben Talty",
       "aliases": [
+        "ben",
         "ben talty",
         "talty"
       ],
@@ -553,8 +569,9 @@
     "ben_hunt": {
       "full_name": "Ben Hunt",
       "aliases": [
-        "dozer",
+        "ben",
         "ben hunt",
+        "dozer",
         "hunt"
       ],
       "current_club": "Brisbane Broncos",
@@ -591,6 +608,7 @@
     "deine_mariner": {
       "full_name": "Deine Mariner",
       "aliases": [
+        "deine",
         "deine mariner",
         "mariner"
       ],
@@ -625,8 +643,9 @@
     "cory_paix": {
       "full_name": "Cory Paix",
       "aliases": [
-        "paix",
-        "cory paix"
+        "cory",
+        "cory paix",
+        "paix"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Hooker",
@@ -659,8 +678,9 @@
     "gehamat_shibasaki": {
       "full_name": "Gehamat Shibasaki",
       "aliases": [
-        "shibasaki",
-        "gehamat shibasaki"
+        "gehamat",
+        "gehamat shibasaki",
+        "shibasaki"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Centre",
@@ -687,8 +707,9 @@
     "jack_gosiewski": {
       "full_name": "Jack Gosiewski",
       "aliases": [
-        "jack gosiewski",
-        "gosiewski"
+        "gosiewski",
+        "jack",
+        "jack gosiewski"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Second Row",
@@ -713,8 +734,9 @@
     "vaa_semu": {
       "full_name": "Va'a Semu",
       "aliases": [
-        "va'a semu",
-        "semu"
+        "semu",
+        "va'a",
+        "va'a semu"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Prop",
@@ -739,8 +761,9 @@
     "grant_anderson": {
       "full_name": "Grant Anderson",
       "aliases": [
-        "grant anderson",
-        "anderson"
+        "anderson",
+        "grant",
+        "grant anderson"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Wing",
@@ -769,6 +792,7 @@
     "brendan_piakura": {
       "full_name": "Brendan Piakura",
       "aliases": [
+        "brendan",
         "brendan piakura",
         "piakura"
       ],
@@ -802,8 +826,9 @@
     "jesse_arthars": {
       "full_name": "Jesse Arthars",
       "aliases": [
-        "jesse arthars",
-        "arthars"
+        "arthars",
+        "jesse",
+        "jesse arthars"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Wing",
@@ -835,8 +860,9 @@
     "thomas_duffy": {
       "full_name": "Thomas Duffy",
       "aliases": [
-        "thomas duffy",
-        "duffy"
+        "duffy",
+        "thomas",
+        "thomas duffy"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Halfback",

@@ -4,6 +4,7 @@ import time
 import logging
 import asyncio
 import re
+import difflib
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 SITE_FILTER = "site:nrl.com OR site:foxsports.com.au OR site:abc.net.au OR site:qrl.com.au OR site:postcourier.com.pg OR site:thenational.com.pg"
 
 NRL_QUERY_PATTERN = re.compile(
-    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|adam reynolds|reynolds|ezra mam|mam|carrigan|staggs|willison|karapani|riki|ben hunt)\b",
+    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|haas|hass|adam reynolds|reynolds|ezra mam|mam|carrigan|staggs|willison|karapani|riki|ben hunt)\b",
     re.IGNORECASE
 )
 
@@ -25,8 +26,8 @@ NRL_VALIDATION_SYSTEM_PROMPT = (
     "1. Regular rounds for NRL are FINISHED. The Brisbane Broncos finished 12th, missed the top 8, and their season is OVER with NO games left this year.\n"
     "2. Player Realities & Positions:\n"
     "   - Adam Reynolds is the HALFBACK and CAPTAIN of the Brisbane Broncos (he is NOT a prop). He wears jersey #7. He has major career honours including the 2014 NRL Premiership, 2015 World Club Challenge, and 2015 NRL Auckland Nines with South Sydney.\n"
-    "   - Ezra Mam is the starting FIVE-EIGHTH for the Brisbane Broncos (2023 Grand Final hat-trick hero).\n"
-    "   - Payne Haas is the PROP forward for the Brisbane Broncos.\n"
+    "   - Ezra Mam is the starting FIVE-EIGHTH for the Brisbane Broncos (scored the famous 2023 Grand Final hat-trick for the Broncos).\n"
+    "   - Payne Haas is the PROP forward for the Brisbane Broncos (he is a prop forward and NEVER scored a Grand Final hat-trick).\n"
     "   - Reece Walsh is the FULLBACK for the Brisbane Broncos.\n"
     "   - Patrick Carrigan is the LOCK forward for the Brisbane Broncos.\n"
     "   - Selwyn Cobbo left the Brisbane Broncos and plays for The Dolphins (Centre/Wing). He is NOT returning to the Broncos.\n"
@@ -35,6 +36,23 @@ NRL_VALIDATION_SYSTEM_PROMPT = (
     "3. Sources are tagged with freshness (🟢 Past 7 Days vs 🔴 Historical). Prioritize the past 7 days. Treat news older than 7 days as past history.\n"
     "4. Report strictly verified facts from accredited sources (NRL.com, Fox Sports, ABC, QRL, Post-Courier, The National). Never report rumors or unverified social media posts."
 )
+
+def is_close_typo(s1: str, s2: str) -> bool:
+    """Check if two tokens are nearly identical (edit distance <= 1 or high similarity)."""
+    if s1 == s2:
+        return True
+    if abs(len(s1) - len(s2)) > 1:
+        return False
+    # Substitution
+    if len(s1) == len(s2):
+        return sum(c1 != c2 for c1, c2 in zip(s1, s2)) <= 1
+    # Insertion / Deletion
+    if len(s1) > len(s2):
+        s1, s2 = s2, s1
+    for i in range(len(s2)):
+        if s2[:i] + s2[i+1:] == s1:
+            return True
+    return False
 
 class NRLService:
     """
@@ -132,20 +150,75 @@ class NRLService:
         return bool(re.search(r"\b(stat|stats|statistics|tries|try|metres|meters|tackles|assists|linebreaks|points|performance|goals)\b", text, re.I))
 
     def find_player_in_registry(self, text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
-        """Find matching player entry from registry by key, full name, or aliases."""
+        """Find matching player entry from registry by key, full name, aliases, or typo tolerance."""
         t_low = text.lower()
         players = self.player_registry.get("players", {})
+
+        # 1. Exact match on p_key, full_name, or aliases (> 3 chars)
         for p_key, p_data in players.items():
             full_name = p_data.get("full_name", "").lower()
             aliases = [a.lower() for a in p_data.get("aliases", [])]
             if p_key in t_low or (full_name and full_name in t_low) or any(a in t_low for a in aliases if len(a) > 3):
                 return p_key, p_data
-        # Secondary check for short aliases with word boundaries (e.g. \bhaas\b, \bwalsh\b)
+
+        # 2. Secondary check for short aliases with word boundaries (e.g. \bhaas\b, \bwalsh\b)
         for p_key, p_data in players.items():
             aliases = [a.lower() for a in p_data.get("aliases", [])]
             for a in aliases:
                 if re.search(rf"\b{re.escape(a)}\b", t_low):
                     return p_key, p_data
+
+        # 3. Clean string extraction for typo-tolerant matching
+        clean = re.sub(r"[^\w\s]", " ", text)
+        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "her", "their", "profile", "tell me about", "s"]:
+            clean = re.sub(rf"\b{remove_word}\b", " ", clean, flags=re.I)
+        clean = " ".join(clean.split()).lower()
+
+        if len(clean) >= 3:
+            # Check if cleaned query directly matches key, full_name, or alias
+            for p_key, p_data in players.items():
+                full_name = p_data.get("full_name", "").lower()
+                aliases = [a.lower() for a in p_data.get("aliases", [])]
+                if clean == p_key or clean == full_name or clean in aliases:
+                    return p_key, p_data
+
+            # Check typo tolerance (edit distance <= 1 or difflib similarity >= 0.75)
+            clean_tokens = [tok for tok in clean.split() if len(tok) >= 3]
+            best_match = None
+            best_ratio = 0.0
+
+            for p_key, p_data in players.items():
+                full_name = p_data.get("full_name", "").lower()
+                candidate_strings = [full_name, p_key.replace("_", " ")]
+                candidate_strings.extend([a.lower() for a in p_data.get("aliases", [])])
+
+                # Whole string similarity (e.g. "payne hass" vs "payne haas")
+                for cand in candidate_strings:
+                    ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
+                    if ratio > best_ratio:
+                        best_ratio = ratio
+                        best_match = (p_key, p_data)
+
+                # Token-by-token edit distance & similarity (e.g. "hass" vs "haas")
+                cand_tokens = []
+                for cand in candidate_strings:
+                    cand_tokens.extend(cand.split())
+
+                for tok in clean_tokens:
+                    for ctok in cand_tokens:
+                        if len(tok) >= 4 and len(ctok) >= 4:
+                            if is_close_typo(tok, ctok):
+                                logger.info(f"Typo matched token '{tok}' -> '{ctok}' for player '{full_name}'")
+                                return p_key, p_data
+                            t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
+                            if t_ratio >= 0.75 and t_ratio > best_ratio:
+                                best_ratio = t_ratio
+                                best_match = (p_key, p_data)
+
+            if best_match and best_ratio >= 0.75:
+                logger.info(f"Fuzzy matched query '{clean}' to player '{best_match[1].get('full_name')}' (ratio={best_ratio:.2f})")
+                return best_match
+
         return None
 
     def format_player_stats_card(self, player_data: Dict[str, Any]) -> str:
