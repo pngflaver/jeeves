@@ -73,12 +73,18 @@
       },
       "career_stats": {
         "nrl_games": 89,
-        "tries": 51
+        "tries": 51,
+        "grand_finals": 1
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2022 & 2023 State of Origin Series Winner with Queensland Maroons",
+        "2022 Indigenous All Stars Representative",
+        "2023 NRL Grand Finalist (Brisbane Broncos)"
+      ]
     },
     "reece_walsh": {
       "full_name": "Reece Walsh",
@@ -108,16 +114,21 @@
         "total_points": 48
       },
       "career_stats": {
-        "nrl_games": 92,
-        "tries": 38,
-        "goals": 32,
-        "points": 344,
+        "nrl_games": 78,
+        "tries": 32,
+        "goals": 98,
+        "points": 324,
         "grand_finals": 1
       },
       "source": "fox_sports_lab",
       "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2023 State of Origin Series Winner with Queensland Maroons",
+        "2023 RLPA Breakthrough Player of the Year",
+        "2023 NRL Grand Finalist with Brisbane Broncos"
+      ]
     },
     "payne_haas": {
       "full_name": "Payne Haas",
@@ -152,7 +163,14 @@
       "source": "fox_sports_lab",
       "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "5\u00d7 Dally M Prop of the Year (2019, 2020, 2021, 2022, 2023)",
+        "5\u00d7 Paul Morgan Medal Winner (Broncos Best & Fairest: 2019, 2020, 2021, 2022, 2023)",
+        "2019 Dally M Rookie of the Year",
+        "14 State of Origin Matches for New South Wales Blues",
+        "Australia Kangaroos International Representative"
+      ]
     },
     "patrick_carrigan": {
       "full_name": "Patrick Carrigan",
@@ -183,14 +201,20 @@
         "total_points": 4
       },
       "career_stats": {
-        "nrl_games": 118,
-        "tries": 3,
+        "nrl_games": 108,
+        "tries": 2,
         "grand_finals": 1
       },
       "source": "fox_sports_lab",
       "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2022 Wally Lewis Medal Winner (State of Origin Player of the Series)",
+        "2022 & 2023 State of Origin Series Winner with Queensland Maroons",
+        "Australia Kangaroos Rugby League World Cup Winner (2022)",
+        "Brisbane Broncos Co-Captain & 2023 Grand Finalist"
+      ]
     },
     "kotoni_staggs": {
       "full_name": "Kotoni Staggs",
@@ -304,32 +328,65 @@
       "career_stats": {
         "nrl_games": 158,
         "tries": 64,
-        "premierships": 2
+        "premierships": 2,
+        "grand_finals": 2
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2\u00d7 NRL Premiership Winner (2018, 2019 with Sydney Roosters)",
+        "2022 IRL Golden Boot Winner (World Best International Player)",
+        "2022 Dally M Centre of the Year",
+        "New Zealand Kiwis International (17 Tests)",
+        "2028 PNG Chiefs Inaugural Marquee Signing #007"
+      ]
     },
     "alex_johnston": {
       "full_name": "Alex Johnston",
       "aliases": [
         "alex",
         "alex johnston",
-        "johnston"
+        "alex johnson",
+        "johnston",
+        "johnson",
+        "aj"
       ],
       "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
       "previous_club": "South Sydney Rabbitohs",
       "position": "Wing",
       "status": "Committed as senior leader for PNG Chiefs 2028 entry; all-time legendary tryscorer.",
       "career_stats": {
-        "nrl_games": 224,
-        "tries": 195
+        "nrl_games": 242,
+        "tries": 195,
+        "premierships": 1,
+        "grand_finals": 2
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "season_stats_2026": {
+        "matches": 14,
+        "tries": 8,
+        "try_assists": 3,
+        "line_breaks": 9,
+        "run_metres": 1560,
+        "avg_run_metres": 111.4,
+        "tackles": 86,
+        "tackle_efficiency": "82%"
+      },
+      "major_honours": [
+        "2014 NRL Premiership Winner (South Sydney Rabbitohs)",
+        "3\u00d7 Ken Irvine Medal (NRL Top Try-Scorer of the Year: 2020, 2021, 2022)",
+        "South Sydney Rabbitohs All-Time Record Try Scorer (195 Tries)",
+        "2nd on NRL All-Time Try-Scorers List (Chasing Ken Irvine's 212 Record)",
+        "2015 World Club Challenge Champion & 2015 NRL Auckland Nines Winner",
+        "Papua New Guinea Kumuls Captain & International (10 Tests)",
+        "Australian Kangaroos Representative (2015)",
+        "Indigenous All Stars Representative (4 Appearances)"
+      ]
     },
     "jarome_luai": {
       "full_name": "Jarome Luai",
@@ -351,14 +408,20 @@
         "avg_run_metres": 85.9
       },
       "career_stats": {
-        "nrl_games": 130,
-        "tries": 27,
-        "premierships": 3
+        "nrl_games": 135,
+        "tries": 19,
+        "premierships": 4,
+        "grand_finals": 5
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "4\u00d7 NRL Premiership Winner (2021, 2022, 2023, 2024 with Penrith Panthers)",
+        "Samoa International Captain (2021/2022 World Cup Finalist)",
+        "7 State of Origin Matches for New South Wales Blues (2021, 2024 Series Winner)"
+      ]
     },
     "kalyn_ponga": {
       "full_name": "Kalyn Ponga",
@@ -383,14 +446,21 @@
         "total_points": 140
       },
       "career_stats": {
-        "nrl_games": 138,
-        "tries": 49,
-        "points": 648
+        "nrl_games": 142,
+        "tries": 46,
+        "goals": 210,
+        "points": 604
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2023 Dally M Medal Winner (NRL Player of the Year)",
+        "2023 RLPA The Players' Champion",
+        "2\u00d7 State of Origin Series Winner with Queensland Maroons (2022, 2023)",
+        "Newcastle Knights Captain & Maroons Star Fullback"
+      ]
     },
     "xavier_willison": {
       "full_name": "Xavier Willison",
@@ -991,14 +1061,20 @@
         "offloads": 38
       },
       "career_stats": {
-        "nrl_games": 212,
-        "tries": 28,
-        "points": 112
+        "nrl_games": 218,
+        "tries": 26,
+        "grand_finals": 1
       },
       "source": "official",
       "last_verified_ts": 1788601888.2221818,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2022 Dally M Prop of the Year",
+        "2022 Meninga Medal Winner (Canberra Raiders Best & Fairest)",
+        "New Zealand Kiwis International (19 Tests)",
+        "Canberra Raiders Co-Captain"
+      ]
     },
     "cameron_munster": {
       "full_name": "Cameron Munster",
@@ -1058,15 +1134,21 @@
         "tackles": 390
       },
       "career_stats": {
-        "nrl_games": 168,
-        "tries": 52,
-        "points": 210,
-        "premierships": 1
+        "nrl_games": 158,
+        "tries": 48,
+        "premierships": 1,
+        "grand_finals": 2
       },
       "source": "official",
       "last_verified_ts": 1788601888.2221818,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2024 Dally M Medal Winner (NRL Player of the Year)",
+        "2020 NRL Premiership Winner (Melbourne Storm)",
+        "2024 Dally M Halfback of the Year",
+        "New Zealand Kiwis International (10 Tests)"
+      ]
     },
     "james_tedesco": {
       "full_name": "James Tedesco",
