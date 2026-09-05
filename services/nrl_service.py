@@ -169,6 +169,20 @@ class NRLService:
         """Check if query is specifically requesting player or team statistics, ladder, or form."""
         return bool(re.search(r"\b(stat|stats|statistics|tries|try|metres|meters|tackles|assists|linebreaks|points|performance|goals|ladder|standings|standing|record|form)\b", text, re.I))
 
+    def is_player_query(self, text: str) -> bool:
+        """Check if query is specifically asking for a player profile or player statistics."""
+        if self.is_stats_query(text):
+            return True
+        clean = self.extract_clean_player_name(text)
+        tokens = clean.split()
+        if 1 <= len(tokens) <= 3:
+            if self.find_player_in_registry(text):
+                return True
+            suggs = self.suggest_players(text, max_candidates=1)
+            if suggs and suggs[0][2] >= 0.75:
+                return True
+        return False
+
     def _get_all_players(self) -> Dict[str, Dict[str, Any]]:
         """Get merged dictionary of all players from both player_registry and teams squads."""
         all_players: Dict[str, Dict[str, Any]] = dict(self.player_registry.get("players", {}))
@@ -800,10 +814,10 @@ class NRLService:
         if q_low in ["ladder", "standings", "table", "nrl ladder", "nrl standings", "the ladder"]:
             return self.format_full_ladder()
 
-        # 2. Player stats inquiry
-        if self.is_stats_query(query):
+        # 2. Player profile / stats inquiry
+        if self.is_player_query(query):
             player_data = await self.resolve_or_cache_player(query)
-            if player_data and ("season_stats_2026" in player_data or "career_stats" in player_data):
+            if player_data:
                 logger.info(f"Serving instant verified stats card for '{player_data.get('full_name')}'")
                 return self.format_player_stats_card(player_data)
 

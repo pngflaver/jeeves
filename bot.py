@@ -464,7 +464,7 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             return
 
         # 3. Check if query is asking for player stats and matches multiple candidates or has moderate confidence
-        if nrl_service.is_stats_query(query):
+        if nrl_service.is_player_query(query):
             candidates = nrl_service.suggest_players(query, max_candidates=4)
             if candidates:
                 top_key, top_data, top_score = candidates[0]
@@ -504,7 +504,7 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     return
 
         # 4. Check if query is asking for a specific player who needs on-demand compilation
-        if nrl_service.is_stats_query(query):
+        if nrl_service.is_player_query(query):
             matched_player = nrl_service.find_player_in_registry(query)
             if matched_player:
                 p_key, p_data = matched_player

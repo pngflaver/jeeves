@@ -1258,6 +1258,132 @@
       "last_verified_ts": 1788599456.0,
       "last_verified": "2026-09-05",
       "ttl_days": 365
+    },
+    "alex_glenn": {
+      "full_name": "Alex Glenn",
+      "aliases": [
+        "alex glenn",
+        "alex glen",
+        "glenn",
+        "glen",
+        "lexi"
+      ],
+      "current_club": "Brisbane Broncos (Retired Club Captain / Ambassador)",
+      "position": "Second-Row / Centre / Lock",
+      "representative": "New Zealand Kiwis (12 Tests), Cook Islands (2 Tests)",
+      "status": "Retired Brisbane Broncos Captain & Club Legend (285 NRL Games). Concluded playing career in 2021; currently club game-day ambassador.",
+      "career_stats": {
+        "nrl_games": 285,
+        "tries": 57,
+        "points": 228,
+        "grand_finals": 1
+      },
+      "major_honours": [
+        "Brisbane Broncos Captain (2020\u20132021)",
+        "285 NRL Matches for Brisbane Broncos (4th on All-Time Club Appearances List)",
+        "12 Test Matches for New Zealand Kiwis",
+        "2 Test Matches for Cook Islands",
+        "2015 NRL Grand Finalist (Brisbane Broncos)"
+      ],
+      "source": "official_archive",
+      "last_verified_ts": 1788599456.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 365
+    },
+    "darren_lockyer": {
+      "full_name": "Darren Lockyer",
+      "aliases": [
+        "darren lockyer",
+        "lockyer",
+        "locky",
+        "darren"
+      ],
+      "current_club": "Brisbane Broncos (Board Member / Club Legend)",
+      "position": "Five-Eighth / Fullback",
+      "representative": "Queensland Maroons (36 Games), Australia Kangaroos (59 Tests)",
+      "status": "Retired Australian Rugby League Legend & All-Time Most-Capped Broncos Player (355 Games).",
+      "career_stats": {
+        "nrl_games": 355,
+        "tries": 122,
+        "goals": 341,
+        "field_goals": 21,
+        "points": 1195,
+        "premierships": 4,
+        "grand_finals": 4
+      },
+      "major_honours": [
+        "4\u00d7 NRL Premiership Winner (1998, 2000, 2006, 1997 SL with Brisbane Broncos)",
+        "2000 Clive Churchill Medal Winner",
+        "3\u00d7 Dally M Five-Eighth of the Year & 2\u00d7 Golden Boot Winner (2003, 2006)",
+        "59 Test Matches for Australia Kangaroos (38 as Captain)",
+        "36 State of Origin Matches for Queensland Maroons",
+        "Brisbane Broncos All-Time Most Capped Player (355 Matches)"
+      ],
+      "source": "official_archive",
+      "last_verified_ts": 1788599456.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 365
+    },
+    "corey_parker": {
+      "full_name": "Corey Parker",
+      "aliases": [
+        "corey parker",
+        "parker",
+        "cozza"
+      ],
+      "current_club": "Brisbane Broncos (Retired Captain / Media)",
+      "position": "Lock Forward",
+      "representative": "Queensland Maroons (19 Games), Australia Kangaroos (13 Tests)",
+      "status": "Retired Brisbane Broncos Captain & Club Legend (347 NRL Games).",
+      "career_stats": {
+        "nrl_games": 347,
+        "tries": 39,
+        "goals": 581,
+        "points": 1332,
+        "premierships": 1,
+        "grand_finals": 2
+      },
+      "major_honours": [
+        "2006 NRL Premiership Winner (Brisbane Broncos)",
+        "2015 Dally M Lock of the Year",
+        "347 NRL Matches for Brisbane Broncos (2nd on All-Time Club Appearances List)",
+        "19 State of Origin Matches for Queensland Maroons (2015 Wally Lewis Medal Winner)",
+        "13 Test Matches for Australia Kangaroos"
+      ],
+      "source": "official_archive",
+      "last_verified_ts": 1788599456.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 365
+    },
+    "sam_thaiday": {
+      "full_name": "Sam Thaiday",
+      "aliases": [
+        "sam thaiday",
+        "thaiday",
+        "slammin sam"
+      ],
+      "current_club": "Brisbane Broncos (Retired Captain / Ambassador)",
+      "position": "Prop / Second-Row / Lock",
+      "representative": "Queensland Maroons (29 Games), Australia Kangaroos (34 Tests)",
+      "status": "Retired Brisbane Broncos Captain & Club Legend (304 NRL Games).",
+      "career_stats": {
+        "nrl_games": 304,
+        "tries": 40,
+        "points": 160,
+        "premierships": 1,
+        "grand_finals": 2
+      },
+      "major_honours": [
+        "2006 NRL Premiership Winner (Brisbane Broncos)",
+        "Brisbane Broncos Captain (2012\u20132013)",
+        "304 NRL Matches for Brisbane Broncos (3rd on All-Time Club Appearances List)",
+        "29 State of Origin Matches for Queensland Maroons",
+        "34 Test Matches for Australia Kangaroos"
+      ],
+      "source": "official_archive",
+      "last_verified_ts": 1788599456.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 365
     }
   }
 }
