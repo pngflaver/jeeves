@@ -473,7 +473,7 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     and candidates[1][2] >= 0.80
                     and abs(top_score - candidates[1][2]) < 0.15
                 )
-                is_moderate_confidence = (0.60 <= top_score < 0.85)
+                is_moderate_confidence = (0.75 <= top_score < 0.85)
 
                 if is_ambiguous or is_moderate_confidence:
                     clean_name = nrl_service.extract_clean_player_name(query)
@@ -942,6 +942,10 @@ async def nrl_player_select_callback(update: Update, context: ContextTypes.DEFAU
     if data.startswith("nrl_p:"):
         p_key = data.split(":", 1)[1]
         player_data = nrl_service.player_registry.get("players", {}).get(p_key)
+        if not player_data:
+            match = nrl_service.find_player_in_registry(p_key)
+            if match:
+                player_data = match[1]
         if not player_data:
             await query.answer("Player record not found.")
             return

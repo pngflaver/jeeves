@@ -169,74 +169,130 @@ class NRLService:
         """Check if query is specifically requesting player or team statistics, ladder, or form."""
         return bool(re.search(r"\b(stat|stats|statistics|tries|try|metres|meters|tackles|assists|linebreaks|points|performance|goals|ladder|standings|standing|record|form)\b", text, re.I))
 
-    def find_player_in_registry(self, text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
-        """Find matching player entry from registry by key, full name, aliases, or typo tolerance."""
-        t_low = text.lower()
-        players = self.player_registry.get("players", {})
+    def _get_all_players(self) -> Dict[str, Dict[str, Any]]:
+        """Get merged dictionary of all players from both player_registry and teams squads."""
+        all_players: Dict[str, Dict[str, Any]] = dict(self.player_registry.get("players", {}))
+        teams = self.teams_registry.get("teams", {})
+        for t_key, t_data in teams.items():
+            t_name = t_data.get("name", "NRL Club")
+            for sq_key in t_data.get("squad", []):
+                if sq_key not in all_players:
+                    fn = sq_key.replace("_", " ").title()
+                    tokens = sq_key.split("_")
+                    all_players[sq_key] = {
+                        "full_name": fn,
+                        "aliases": [sq_key, fn.lower(), sq_key.replace("_", " ")] + tokens,
+                        "current_club": t_name,
+                        "position": "NRL Player",
+                        "status": f"Active {t_name} squad list on-file.",
+                        "source": "team_list"
+                    }
+        return all_players
 
-        # 1. Exact match on p_key, full_name, or aliases (> 3 chars)
-        for p_key, p_data in players.items():
-            full_name = p_data.get("full_name", "").lower()
-            aliases = [a.lower() for a in p_data.get("aliases", [])]
-            if p_key in t_low or (full_name and full_name in t_low) or any(a in t_low for a in aliases if len(a) > 3):
+    def find_player_in_registry(self, text: str) -> Optional[Tuple[str, Dict[str, Any]]]:
+        """Find matching player entry from registry and team squads by key, full name, aliases, or typo tolerance."""
+        t_low = text.lower()
+        clean = self.extract_clean_player_name(text).lower()
+        clean_tokens = [tok for tok in clean.split() if len(tok) >= 2]
+        all_players = self._get_all_players()
+
+        # Tier 1: Exact full-name or key match across all players
+        for p_key, p_data in all_players.items():
+            fn = p_data.get("full_name", "").lower()
+            p_norm = p_key.replace("_", " ").lower()
+            if clean and (clean == fn or clean == p_key or clean == p_norm):
+                return p_key, p_data
+            if len(clean_tokens) >= 2 and (fn in t_low or p_norm in t_low):
                 return p_key, p_data
 
-        # 2. Secondary check for short aliases with word boundaries (e.g. \bhaas\b, \bwalsh\b)
-        for p_key, p_data in players.items():
+        # Tier 2: Exact alias match
+        for p_key, p_data in all_players.items():
             aliases = [a.lower() for a in p_data.get("aliases", [])]
-            for a in aliases:
-                if re.search(rf"\b{re.escape(a)}\b", t_low):
-                    return p_key, p_data
+            if clean in aliases:
+                return p_key, p_data
 
-        # 3. Clean string extraction for typo-tolerant matching
-        clean = re.sub(r"[^\w\s]", " ", text)
-        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "her", "their", "profile", "tell me about", "s"]:
-            clean = re.sub(rf"\b{remove_word}\b", " ", clean, flags=re.I)
-        clean = " ".join(clean.split()).lower()
+        # Tier 3: Single-token query exact match against last name
+        if len(clean_tokens) == 1:
+            tok = clean_tokens[0]
+            matched_by_last_name = []
+            for p_key, p_data in all_players.items():
+                fn_tokens = p_data.get("full_name", "").lower().split()
+                if fn_tokens and fn_tokens[-1] == tok:
+                    matched_by_last_name.append((p_key, p_data))
+            if len(matched_by_last_name) == 1:
+                return matched_by_last_name[0]
+            elif len(matched_by_last_name) > 1:
+                # Prefer verified registry profile over team_list placeholder if available
+                for pk, pd in matched_by_last_name:
+                    if pd.get("source") != "team_list":
+                        return pk, pd
+                return matched_by_last_name[0]
 
+        # Tier 4: Typo and similarity matching across all players
         if len(clean) >= 3:
-            # Check if cleaned query directly matches key, full_name, or alias
-            for p_key, p_data in players.items():
-                full_name = p_data.get("full_name", "").lower()
-                aliases = [a.lower() for a in p_data.get("aliases", [])]
-                if clean == p_key or clean == full_name or clean in aliases:
-                    return p_key, p_data
-
-            # Check typo tolerance (edit distance <= 1 or difflib similarity >= 0.75)
-            clean_tokens = [tok for tok in clean.split() if len(tok) >= 3]
             best_match = None
-            best_ratio = 0.0
+            best_score = 0.0
 
-            for p_key, p_data in players.items():
-                full_name = p_data.get("full_name", "").lower()
-                candidate_strings = [full_name, p_key.replace("_", " ")]
-                candidate_strings.extend([a.lower() for a in p_data.get("aliases", [])])
+            for p_key, p_data in all_players.items():
+                fn = p_data.get("full_name", "").lower()
+                p_norm = p_key.replace("_", " ").lower()
+                aliases = [a.lower() for a in p_data.get("aliases", [])]
+                cand_strings = [fn, p_norm] + aliases
 
-                # Whole string similarity (e.g. "payne hass" vs "payne haas")
-                for cand in candidate_strings:
-                    ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
-                    if ratio > best_ratio:
-                        best_ratio = ratio
-                        best_match = (p_key, p_data)
+                # Whole string similarity
+                for cand in cand_strings:
+                    if len(cand) >= 4:
+                        ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
+                        if ratio > best_score:
+                            best_score = ratio
+                            best_match = (p_key, p_data)
+                    if is_close_typo(clean, cand):
+                        if 0.92 > best_score:
+                            best_score = 0.92
+                            best_match = (p_key, p_data)
 
-                # Token-by-token edit distance & similarity (e.g. "hass" vs "haas")
-                cand_tokens = []
-                for cand in candidate_strings:
-                    cand_tokens.extend(cand.split())
-
-                for tok in clean_tokens:
-                    for ctok in cand_tokens:
-                        if len(tok) >= 4 and len(ctok) >= 4:
-                            if is_close_typo(tok, ctok):
-                                logger.info(f"Typo matched token '{tok}' -> '{ctok}' for player '{full_name}'")
-                                return p_key, p_data
-                            t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
-                            if t_ratio >= 0.75 and t_ratio > best_ratio:
-                                best_ratio = t_ratio
+                # Multi-token token-by-token matching (e.g. "payne hass" vs "payne haas")
+                if len(clean_tokens) >= 2:
+                    cand_tokens = fn.split()
+                    if len(cand_tokens) == len(clean_tokens):
+                        all_tokens_match = True
+                        total_t_score = 0.0
+                        for q_t, c_t in zip(clean_tokens, cand_tokens):
+                            if q_t == c_t:
+                                total_t_score += 1.0
+                            elif len(q_t) >= 4 and len(c_t) >= 4 and is_close_typo(q_t, c_t):
+                                total_t_score += 0.90
+                            else:
+                                t_ratio = difflib.SequenceMatcher(None, q_t, c_t).ratio()
+                                if t_ratio >= 0.75:
+                                    total_t_score += t_ratio
+                                else:
+                                    all_tokens_match = False
+                                    break
+                        if all_tokens_match:
+                            avg_score = total_t_score / len(clean_tokens)
+                            if avg_score > best_score:
+                                best_score = avg_score
                                 best_match = (p_key, p_data)
 
-            if best_match and best_ratio >= 0.75:
-                logger.info(f"Fuzzy matched query '{clean}' to player '{best_match[1].get('full_name')}' (ratio={best_ratio:.2f})")
+                # Single-token typo matching against last name / tokens (e.g. "papali" vs "papalii")
+                if len(clean_tokens) == 1:
+                    q_t = clean_tokens[0]
+                    cand_tokens = fn.split() + aliases
+                    for c_t in cand_tokens:
+                        if len(q_t) >= 4 and len(c_t) >= 4:
+                            if is_close_typo(q_t, c_t):
+                                if 0.89 > best_score:
+                                    best_score = 0.89
+                                    best_match = (p_key, p_data)
+                            else:
+                                t_ratio = difflib.SequenceMatcher(None, q_t, c_t).ratio()
+                                if t_ratio >= 0.80 and (t_ratio * 0.90) > best_score:
+                                    best_score = t_ratio * 0.90
+                                    best_match = (p_key, p_data)
+
+            if best_match and best_score >= 0.75:
+                logger.info(f"Fuzzy matched '{clean}' to player '{best_match[1].get('full_name')}' (score={best_score:.2f})")
                 return best_match
 
         return None
@@ -250,19 +306,19 @@ class NRLService:
 
     def suggest_players(self, text: str, max_candidates: int = 4) -> List[Tuple[str, Dict[str, Any], float]]:
         """
-        Find ranked player candidates for ambiguous or misspelled queries.
+        Find ranked player candidates for ambiguous or misspelled queries across both
+        the registered player database and all 17 NRL team squad rosters.
         Returns a list of up to `max_candidates` tuples of (player_key, player_data, score).
         """
         clean = self.extract_clean_player_name(text).lower()
         if len(clean) < 2:
             return []
 
-        players = self.player_registry.get("players", {})
+        all_players = self._get_all_players()
         scored_candidates: Dict[str, Tuple[float, Dict[str, Any]]] = {}
-
         clean_tokens = [tok for tok in clean.split() if len(tok) >= 2]
 
-        for p_key, p_data in players.items():
+        for p_key, p_data in all_players.items():
             full_name = p_data.get("full_name", "").lower()
             aliases = [a.lower() for a in p_data.get("aliases", [])]
             candidate_strings = [full_name, p_key.replace("_", " ")] + aliases
@@ -275,8 +331,11 @@ class NRLService:
 
             # Whole string similarity
             for cand in candidate_strings:
-                ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
-                score = max(score, ratio)
+                if len(cand) >= 4:
+                    ratio = difflib.SequenceMatcher(None, clean, cand).ratio()
+                    score = max(score, ratio)
+                elif len(cand) >= 3 and clean == cand:
+                    score = max(score, 0.95)
 
             # Token level checks
             cand_tokens = []
@@ -288,16 +347,17 @@ class NRLService:
                     if tok == ctok:
                         score = max(score, 0.90)
                     elif len(tok) >= 4 and len(ctok) >= 4 and is_close_typo(tok, ctok):
-                        score = max(score, 0.85)
-                    elif len(tok) >= 3 and len(ctok) >= 3:
+                        score = max(score, 0.88)
+                    elif len(tok) >= 4 and len(ctok) >= 4:
                         t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
-                        if t_ratio >= 0.70:
-                            score = max(score, t_ratio * 0.85)
+                        if t_ratio >= 0.78:
+                            score = max(score, t_ratio * 0.90)
 
-            if any(clean in cand for cand in candidate_strings if len(clean) >= 3):
+            if any(clean in cand for cand in candidate_strings if len(clean) >= 4):
                 score = max(score, 0.88)
 
-            if score >= 0.60:
+            # Only suggest genuine matches (>= 0.75) to prevent false suggestions
+            if score >= 0.75:
                 scored_candidates[p_key] = (score, p_data)
 
         # Sort descending by score

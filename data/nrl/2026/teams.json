@@ -35,11 +35,18 @@
         "status": "Finals - Major Semi (Minor Premiers)"
       },
       "squad": [
-        "jahrome_hughes",
         "cameron_munster",
+        "jahrome_hughes",
         "harry_grant",
         "ryan_papenhuyzen",
-        "xavier_coates"
+        "xavier_coates",
+        "eli_katoa",
+        "trent_loiero",
+        "nick_meaney",
+        "will_warbrick",
+        "josh_king",
+        "shawn_blore",
+        "tyran_wishart"
       ],
       "source": "official"
     },
@@ -80,7 +87,13 @@
         "isaah_yeo",
         "dylan_edwards",
         "brian_to'o",
-        "moses_leota"
+        "moses_leota",
+        "liam_martin",
+        "scott_sorensen",
+        "mitch_kenny",
+        "izack_tagi",
+        "james_fisher-harris",
+        "brad_schneider"
       ],
       "source": "official"
     },
@@ -122,7 +135,14 @@
         "sam_walker",
         "victor_radley",
         "lindsay_collins",
-        "dom_young"
+        "dom_young",
+        "connor_watson",
+        "brandon_smith",
+        "daniel_tupou",
+        "spencer_leniu",
+        "siua_wong",
+        "nat_butcher",
+        "angus_crichton"
       ],
       "source": "official"
     },
@@ -164,7 +184,13 @@
         "blayke_brailey",
         "cameron_mcinnes",
         "will_kennedy",
-        "ronaldo_mulitalo"
+        "ronaldo_mulitalo",
+        "braydon_trindall",
+        "briton_nikora",
+        "teig_wilton",
+        "siosifa_talakai",
+        "jesse_ramien",
+        "kayal_iro"
       ],
       "source": "official"
     },
@@ -202,11 +228,17 @@
         "status": "Finals - Elimination"
       },
       "squad": [
-        "scott_drinkwater",
         "tom_dearden",
+        "scott_drinkwater",
         "reuben_cotter",
         "valentine_holmes",
-        "jeremiah_nanai"
+        "jeremiah_nanai",
+        "murray_taulagi",
+        "reece_robson",
+        "jason_taumalolo",
+        "griffin_neame",
+        "kulikefu_finefeuiaki",
+        "sam_mclntyre"
       ],
       "source": "official"
     },
@@ -249,7 +281,14 @@
         "matt_burton",
         "viliame_kikau",
         "reed_mahoney",
-        "jacob_kiraz"
+        "jacob_kiraz",
+        "connor_tracey",
+        "bronson_xerri",
+        "josh_curran",
+        "max_king",
+        "sam_hughes",
+        "jaeman_salmon",
+        "jacob_preston"
       ],
       "source": "official"
     },
@@ -291,7 +330,13 @@
         "daly_cherry-evans",
         "haumole_olaka'atu",
         "jake_trbojevic",
-        "tolutau_koula"
+        "tolutau_koula",
+        "luke_brooks",
+        "lehi_hopoate",
+        "jason_saab",
+        "taniela_paseka",
+        "reuben_garrick",
+        "ethan_bullemor"
       ],
       "source": "official"
     },
@@ -332,7 +377,13 @@
         "bradman_best",
         "dane_gagai",
         "phoenix_crossland",
-        "tyson_frizell"
+        "tyson_frizell",
+        "leo_thompson",
+        "jack_cogger",
+        "fletcher_sharpe",
+        "adam_elliott",
+        "greg_marzhew",
+        "kai_pearce-paul"
       ],
       "source": "official"
     },
@@ -375,7 +426,13 @@
         "herbie_farnworth",
         "kodi_nikorima",
         "isaiya_katoa",
-        "tom_flegler"
+        "tom_flegler",
+        "felise_kaufusi",
+        "jesse_bromwich",
+        "mark_nicholls",
+        "ray_stone",
+        "jake_averillo",
+        "trai_fuller"
       ],
       "source": "official"
     },
@@ -418,7 +475,13 @@
         "tyrell_sloan",
         "jaydn_su'a",
         "zac_lomax",
-        "kyle_flanagan"
+        "kyle_flanagan",
+        "moses_suli",
+        "jack_de_belin",
+        "francis_molo",
+        "blake_lawrie",
+        "luciano_leilua",
+        "jacob_liddle"
       ],
       "source": "official"
     },
@@ -456,11 +519,21 @@
         "status": "Eliminated (11th place)"
       },
       "squad": [
+        "josh_papalii",
         "joseph_tapine",
         "jamal_fogarty",
         "hudson_young",
         "matthew_timoko",
-        "xavier_savage"
+        "xavier_savage",
+        "tom_starling",
+        "corey_horsburgh",
+        "sebastian_kris",
+        "kaeo_weekes",
+        "morgan_smithies",
+        "simi_sasagi",
+        "ata_mariota",
+        "ethan_strange",
+        "jordan_rapana"
       ],
       "source": "official"
     },
@@ -557,7 +630,13 @@
         "charnze_nicoll-klokstad",
         "tohu_harris",
         "addin_fonua-blake",
-        "dallin_watene-zelezniak"
+        "dallin_watene-zelezniak",
+        "mitch_barnett",
+        "roger_tuivasa-sheck",
+        "wayde_egan",
+        "jackson_ford",
+        "marata_niukore",
+        "te_maire_martin"
       ],
       "source": "official"
     },
@@ -598,7 +677,13 @@
         "tino_fa'asuamaleaui",
         "aj_brimson",
         "kieran_foran",
-        "jayden_campbell"
+        "jayden_campbell",
+        "beau_fermor",
+        "brian_kelly",
+        "moeaki_fotuaika",
+        "chris_randall",
+        "sam_verrills",
+        "jojo_fifita"
       ],
       "source": "official"
     },
@@ -639,7 +724,13 @@
         "clint_gutherson",
         "dylan_brown",
         "junior_paulo",
-        "will_penisini"
+        "will_penisini",
+        "reagan_campbell-gillard",
+        "shaun_lane",
+        "bryce_cartwright",
+        "blaize_talagi",
+        "joe_ofatengaue",
+        "brendan_hands"
       ],
       "source": "official"
     },
@@ -682,7 +773,13 @@
         "cody_walker",
         "cameron_murray",
         "keaon_koloamatangi",
-        "jack_wighton"
+        "jack_wighton",
+        "alex_johnston",
+        "campbell_graham",
+        "jai_arrow",
+        "tevita_tatola",
+        "siliva_havili",
+        "jye_gray"
       ],
       "source": "official"
     },
@@ -725,7 +822,13 @@
         "jahream_bula",
         "api_koroisau",
         "lachlan_galvin",
-        "stefano_utoikamanu"
+        "stefano_utoikamanu",
+        "justin_olam",
+        "samuela_fainu",
+        "fonua_pole",
+        "alex_twal",
+        "charlie_staines",
+        "aitasi_james"
       ],
       "source": "official"
     },

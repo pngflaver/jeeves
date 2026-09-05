@@ -888,6 +888,262 @@
       "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
+    },
+    "nathan_cleary": {
+      "full_name": "Nathan Cleary",
+      "aliases": [
+        "nathan cleary",
+        "cleary",
+        "nathan"
+      ],
+      "current_club": "Penrith Panthers",
+      "position": "Halfback / Co-Captain",
+      "representative": "New South Wales Blues, Australia Kangaroos",
+      "status": "Penrith Panthers premiership co-captain & halfback (Finals bound - 2nd place).",
+      "season_stats_2026": {
+        "matches": 16,
+        "tries": 5,
+        "try_assists": 18,
+        "goals": 58,
+        "field_goals": 3,
+        "total_points": 139,
+        "kick_metres": 8420,
+        "avg_kick_metres": 526.3,
+        "tackles": 310,
+        "tackle_efficiency": "90%"
+      },
+      "career_stats": {
+        "nrl_games": 175,
+        "tries": 62,
+        "goals": 590,
+        "points": 1560,
+        "premierships": 4
+      },
+      "major_honours": [
+        "4\u00d7 NRL Premierships with Penrith Panthers (2021, 2022, 2023, 2024)",
+        "2\u00d7 Clive Churchill Medal Winner (2021, 2023)",
+        "2\u00d7 Dally M Halfback of the Year (2020, 2021)"
+      ],
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "josh_papalii": {
+      "full_name": "Josh Papalii",
+      "aliases": [
+        "josh papalii",
+        "papalii",
+        "papali",
+        "josh papali'i",
+        "papa",
+        "big papa",
+        "josh"
+      ],
+      "current_club": "Canberra Raiders",
+      "position": "Prop Forward",
+      "representative": "Queensland Maroons, Samoa, Australia",
+      "status": "Canberra Raiders legendary prop & all-time most-capped player (342 games).",
+      "season_stats_2026": {
+        "matches": 12,
+        "tries": 0,
+        "run_metres": 1380,
+        "avg_run_metres": 115.0,
+        "tackles": 340,
+        "tackle_efficiency": "92%",
+        "offloads": 14
+      },
+      "career_stats": {
+        "nrl_games": 342,
+        "tries": 63,
+        "points": 252
+      },
+      "major_honours": [
+        "342 NRL Matches for Canberra Raiders (All-Time Club Record Holder)",
+        "23 State of Origin Matches for Queensland Maroons",
+        "15 International Test Matches for Samoa & Australia",
+        "4\u00d7 Meninga Medal Winner (Raiders Best & Fairest - 2016, 2018, 2019, 2020)",
+        "2020 Dally M Prop of the Year"
+      ],
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "joseph_tapine": {
+      "full_name": "Joseph Tapine",
+      "aliases": [
+        "joseph tapine",
+        "tapine",
+        "joe tapine"
+      ],
+      "current_club": "Canberra Raiders",
+      "position": "Prop / Lock",
+      "representative": "New Zealand Kiwis",
+      "status": "Contracted marquee forward & co-captain for Canberra Raiders.",
+      "season_stats_2026": {
+        "matches": 24,
+        "tries": 4,
+        "run_metres": 3820,
+        "avg_run_metres": 159.2,
+        "tackles": 780,
+        "tackle_efficiency": "94%",
+        "offloads": 38
+      },
+      "career_stats": {
+        "nrl_games": 212,
+        "tries": 28,
+        "points": 112
+      },
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "cameron_munster": {
+      "full_name": "Cameron Munster",
+      "aliases": [
+        "cameron munster",
+        "munster",
+        "cameron"
+      ],
+      "current_club": "Melbourne Storm",
+      "position": "Five-Eighth",
+      "representative": "Queensland Maroons, Australia Kangaroos",
+      "status": "Starting Five-Eighth for Melbourne Storm (Minor Premiers - 1st place).",
+      "season_stats_2026": {
+        "matches": 18,
+        "tries": 7,
+        "try_assists": 16,
+        "line_breaks": 11,
+        "tackle_breaks": 58,
+        "run_metres": 2140,
+        "avg_run_metres": 118.9,
+        "tackles": 295
+      },
+      "career_stats": {
+        "nrl_games": 215,
+        "tries": 58,
+        "points": 280,
+        "premierships": 2
+      },
+      "major_honours": [
+        "2\u00d7 NRL Premierships with Melbourne Storm (2017, 2020)",
+        "2\u00d7 Wally Lewis Medal Winner (2020, 2022)",
+        "3\u00d7 Dally M Five-Eighth of the Year"
+      ],
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "jahrome_hughes": {
+      "full_name": "Jahrome Hughes",
+      "aliases": [
+        "jahrome hughes",
+        "hughes",
+        "jahrome"
+      ],
+      "current_club": "Melbourne Storm",
+      "position": "Halfback",
+      "representative": "New Zealand Kiwis",
+      "status": "Starting Halfback for Melbourne Storm (Minor Premiers - 1st place).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 12,
+        "try_assists": 26,
+        "line_breaks": 14,
+        "run_metres": 2680,
+        "avg_run_metres": 121.8,
+        "tackles": 390
+      },
+      "career_stats": {
+        "nrl_games": 168,
+        "tries": 52,
+        "points": 210,
+        "premierships": 1
+      },
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "james_tedesco": {
+      "full_name": "James Tedesco",
+      "aliases": [
+        "james tedesco",
+        "tedesco",
+        "teddy"
+      ],
+      "current_club": "Sydney Roosters",
+      "position": "Fullback / Captain",
+      "representative": "New South Wales Blues, Australia Kangaroos",
+      "status": "Captain & Fullback for Sydney Roosters (Finals bound - 3rd place).",
+      "season_stats_2026": {
+        "matches": 23,
+        "tries": 14,
+        "try_assists": 24,
+        "line_breaks": 22,
+        "tackle_breaks": 128,
+        "run_metres": 4120,
+        "avg_run_metres": 179.1,
+        "tackles": 110
+      },
+      "career_stats": {
+        "nrl_games": 252,
+        "tries": 142,
+        "points": 572,
+        "premierships": 2
+      },
+      "major_honours": [
+        "2\u00d7 NRL Premierships with Sydney Roosters (2018, 2019)",
+        "2019 Dally M Medal Winner",
+        "2019 Clive Churchill Medal Winner",
+        "3\u00d7 Jack Gibson Medal Winner"
+      ],
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "daly_cherry_evans": {
+      "full_name": "Daly Cherry-Evans",
+      "aliases": [
+        "daly cherry evans",
+        "cherry evans",
+        "dce",
+        "cherry-evans"
+      ],
+      "current_club": "Manly Sea Eagles",
+      "position": "Halfback / Captain",
+      "representative": "Queensland Maroons Captain, Australia Kangaroos",
+      "status": "Captain & Halfback for Manly Sea Eagles (Finals bound - 7th place).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 6,
+        "try_assists": 20,
+        "goals": 42,
+        "field_goals": 4,
+        "total_points": 112,
+        "kick_metres": 9640,
+        "avg_kick_metres": 438.2,
+        "tackles": 430
+      },
+      "career_stats": {
+        "nrl_games": 335,
+        "tries": 96,
+        "points": 980,
+        "premierships": 1
+      },
+      "major_honours": [
+        "2011 NRL Premiership with Manly Sea Eagles",
+        "2011 Clive Churchill Medal Winner",
+        "Queensland Maroons Origin Captain"
+      ],
+      "source": "official",
+      "last_verified_ts": 1788601888.2221818,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     }
   }
 }
