@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 SITE_FILTER = "site:nrl.com OR site:foxsports.com.au OR site:abc.net.au OR site:qrl.com.au OR site:postcourier.com.pg OR site:thenational.com.pg"
 
 NRL_QUERY_PATTERN = re.compile(
-    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|adam reynolds)\b",
+    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|adam reynolds|reynolds|ezra mam|mam|carrigan|staggs|willison|karapani|riki|ben hunt)\b",
     re.IGNORECASE
 )
 
@@ -24,7 +24,8 @@ NRL_VALIDATION_SYSTEM_PROMPT = (
     "CRITICAL FACT-CHECKING & TEMPORAL RULES:\n"
     "1. Regular rounds for NRL are FINISHED. The Brisbane Broncos finished 12th, missed the top 8, and their season is OVER with NO games left this year.\n"
     "2. Player Realities & Positions:\n"
-    "   - Adam Reynolds is the HALFBACK and CAPTAIN of the Brisbane Broncos (he is NOT a prop). He wears jersey #7.\n"
+    "   - Adam Reynolds is the HALFBACK and CAPTAIN of the Brisbane Broncos (he is NOT a prop). He wears jersey #7. He has major career honours including the 2014 NRL Premiership, 2015 World Club Challenge, and 2015 NRL Auckland Nines with South Sydney.\n"
+    "   - Ezra Mam is the starting FIVE-EIGHTH for the Brisbane Broncos (2023 Grand Final hat-trick hero).\n"
     "   - Payne Haas is the PROP forward for the Brisbane Broncos.\n"
     "   - Reece Walsh is the FULLBACK for the Brisbane Broncos.\n"
     "   - Patrick Carrigan is the LOCK forward for the Brisbane Broncos.\n"
@@ -192,6 +193,14 @@ class NRLService:
             pts = career.get("points") or career.get("total_points")
             if pts: lines.append(f"• **Career Points:** {pts:,}")
             if "premierships" in career: lines.append(f"• **Premierships:** {career['premierships']}")
+            if "grand_finals" in career: lines.append(f"• **Grand Finals:** {career['grand_finals']}")
+            lines.append("")
+
+        honours = player_data.get("major_honours", [])
+        if honours:
+            lines.append("🏆 **Major Honours & Titles:**")
+            for h in honours:
+                lines.append(f"• {h}")
             lines.append("")
 
         v_date = player_data.get("last_verified", "Current Season")
@@ -226,7 +235,7 @@ class NRLService:
 
         # Clean query to extract player name cleanly by removing punctuation and query filler
         clean_name = re.sub(r"[^\w\s]", " ", query)
-        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "profile", "tell me about"]:
+        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "her", "their", "profile", "tell me about", "s"]:
             clean_name = re.sub(rf"\b{remove_word}\b", " ", clean_name, flags=re.I)
         clean_name = " ".join(clean_name.split()).strip()
         

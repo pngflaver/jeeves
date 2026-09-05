@@ -3,37 +3,48 @@
     "adam_reynolds": {
       "full_name": "Adam Reynolds",
       "aliases": [
+        "reyno",
         "reynolds",
-        "adam reynolds",
-        "reyno"
+        "adam reynolds"
       ],
       "current_club": "Brisbane Broncos",
       "previous_club": "South Sydney Rabbitohs",
       "position": "Halfback / Captain",
       "status": "Active Brisbane Broncos Captain & Halfback. Regular season ended (Broncos finished 12th, season over).",
       "season_stats_2026": {
-        "matches": 15,
+        "matches": 14,
         "tries": 3,
-        "try_assists": 14,
-        "goals": 48,
+        "try_assists": 6,
+        "line_breaks": 1,
+        "tackle_breaks": 8,
+        "run_metres": 369,
+        "avg_run_metres": 26.4,
+        "tackles": 211,
+        "tackle_efficiency": "81%",
+        "offloads": 2,
+        "kick_metres": 4266,
+        "avg_kick_metres": 304.7,
+        "goals": 30,
         "field_goals": 2,
-        "total_points": 110,
-        "kick_metres": 6450,
-        "avg_kick_metres": 430.0,
-        "tackles": 260,
-        "tackle_efficiency": "88.2%"
+        "total_points": 74
       },
       "career_stats": {
         "nrl_games": 289,
         "tries": 47,
         "goals": 1058,
         "total_points": 2346,
-        "premierships": 1
+        "premierships": 1,
+        "grand_finals": 3
       },
-      "source": "manual_seed",
-      "last_verified_ts": 1788598777.32468,
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
-      "ttl_days": 7
+      "ttl_days": 7,
+      "major_honours": [
+        "2014 NRL Premiership (South Sydney Rabbitohs)",
+        "2015 World Club Challenge (South Sydney Rabbitohs)",
+        "2015 NRL Auckland Nines (South Sydney Rabbitohs)"
+      ]
     },
     "selwyn_cobbo": {
       "full_name": "Selwyn Cobbo",
@@ -70,117 +81,146 @@
     "reece_walsh": {
       "full_name": "Reece Walsh",
       "aliases": [
-        "walsh",
-        "reece"
+        "reece walsh",
+        "walsh"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Fullback",
       "representative": "Queensland Maroons",
-      "status": "Contracted marquee fullback for Brisbane Broncos (season ended; finished 12th).",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
       "season_stats_2026": {
-        "matches": 17,
-        "tries": 9,
-        "try_assists": 16,
-        "line_breaks": 18,
-        "tackle_breaks": 76,
-        "run_metres": 2480,
-        "avg_run_metres": 145.8,
-        "goals": 32,
-        "total_points": 100
+        "matches": 16,
+        "tries": 6,
+        "try_assists": 11,
+        "line_breaks": 8,
+        "tackle_breaks": 78,
+        "run_metres": 1429,
+        "avg_run_metres": 89.3,
+        "tackles": 72,
+        "tackle_efficiency": "77%",
+        "offloads": 12,
+        "kick_metres": 3352,
+        "avg_kick_metres": 209.5,
+        "goals": 12,
+        "total_points": 48
       },
       "career_stats": {
         "nrl_games": 92,
         "tries": 38,
-        "points": 344
+        "goals": 32,
+        "points": 344,
+        "grand_finals": 1
       },
-      "source": "manual_seed",
-      "last_verified_ts": 1788598777.32468,
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
     "payne_haas": {
       "full_name": "Payne Haas",
       "aliases": [
-        "haas",
-        "payne"
+        "payne haas",
+        "haas"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Prop",
-      "status": "Marquee forward for Brisbane Broncos (season ended; finished 12th).",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
       "season_stats_2026": {
-        "matches": 18,
-        "tries": 2,
-        "run_metres": 3120,
-        "avg_run_metres": 173.3,
-        "post_contact_metres": 1280,
-        "tackles": 685,
-        "tackle_efficiency": "96.2%",
-        "offloads": 34
+        "matches": 17,
+        "tries": 3,
+        "try_assists": 0,
+        "line_breaks": 3,
+        "tackle_breaks": 87,
+        "run_metres": 2380,
+        "avg_run_metres": 140.0,
+        "tackles": 547,
+        "tackle_efficiency": "93%",
+        "offloads": 26,
+        "goals": 0,
+        "total_points": 12
       },
       "career_stats": {
         "nrl_games": 134,
-        "tries": 11
+        "tries": 11,
+        "grand_finals": 1
       },
-      "source": "manual_seed",
-      "last_verified_ts": 1788598777.32468,
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
     "patrick_carrigan": {
       "full_name": "Patrick Carrigan",
       "aliases": [
-        "carrigan",
-        "patty carrigan"
+        "patrick carrigan",
+        "patty carrigan",
+        "carrigan"
       ],
       "current_club": "Brisbane Broncos",
-      "position": "Lock",
+      "position": "Lock / Co-Captain",
       "representative": "Queensland Maroons",
-      "status": "Co-captain and Lock forward for Brisbane Broncos (season ended; finished 12th).",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
       "season_stats_2026": {
-        "matches": 22,
+        "matches": 18,
         "tries": 1,
-        "run_metres": 3650,
-        "avg_run_metres": 165.9,
-        "tackles": 842,
-        "tackle_efficiency": "95.8%",
-        "offloads": 41
+        "try_assists": 2,
+        "line_breaks": 1,
+        "tackle_breaks": 26,
+        "run_metres": 1803,
+        "avg_run_metres": 100.2,
+        "tackles": 758,
+        "tackle_efficiency": "89%",
+        "offloads": 10,
+        "kick_metres": 10,
+        "avg_kick_metres": 0.6,
+        "goals": 0,
+        "total_points": 4
       },
       "career_stats": {
         "nrl_games": 118,
-        "tries": 3
+        "tries": 3,
+        "grand_finals": 1
       },
-      "source": "manual_seed",
-      "last_verified_ts": 1788598777.32468,
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
     "kotoni_staggs": {
       "full_name": "Kotoni Staggs",
       "aliases": [
+        "kotoni",
         "staggs",
-        "kotoni"
+        "kotoni staggs"
       ],
       "current_club": "Brisbane Broncos",
       "position": "Centre",
-      "status": "Starting strike centre for Brisbane Broncos (season ended; finished 12th).",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
       "season_stats_2026": {
         "matches": 21,
-        "tries": 10,
-        "try_assists": 6,
-        "line_breaks": 14,
-        "tackle_breaks": 78,
-        "run_metres": 2610,
-        "avg_run_metres": 124.3,
-        "goals": 24,
-        "total_points": 88
+        "tries": 9,
+        "try_assists": 3,
+        "line_breaks": 8,
+        "tackle_breaks": 76,
+        "run_metres": 2140,
+        "avg_run_metres": 101.9,
+        "tackles": 300,
+        "tackle_efficiency": "84%",
+        "offloads": 16,
+        "kick_metres": 110,
+        "avg_kick_metres": 5.2,
+        "goals": 1,
+        "total_points": 38
       },
       "career_stats": {
         "nrl_games": 126,
         "tries": 52,
-        "points": 396
+        "goals": 24,
+        "points": 396,
+        "grand_finals": 1
       },
-      "source": "manual_seed",
-      "last_verified_ts": 1788598777.32468,
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -337,6 +377,489 @@
       },
       "source": "manual_seed",
       "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "xavier_willison": {
+      "full_name": "Xavier Willison",
+      "aliases": [
+        "willison",
+        "xavier willison"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Prop",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 24,
+        "tries": 7,
+        "try_assists": 0,
+        "line_breaks": 4,
+        "tackle_breaks": 54,
+        "run_metres": 2647,
+        "avg_run_metres": 110.3,
+        "tackles": 759,
+        "tackle_efficiency": "89%",
+        "offloads": 11,
+        "kick_metres": 15,
+        "avg_kick_metres": 0.6,
+        "goals": 0,
+        "total_points": 28
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 38,
+        "tries": 9
+      }
+    },
+    "josiah_karapani": {
+      "full_name": "Josiah Karapani",
+      "aliases": [
+        "josiah karapani",
+        "karapani"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Centre",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 8,
+        "try_assists": 2,
+        "line_breaks": 19,
+        "tackle_breaks": 77,
+        "run_metres": 2953,
+        "avg_run_metres": 134.2,
+        "tackles": 91,
+        "tackle_efficiency": "67%",
+        "offloads": 0,
+        "kick_metres": 26,
+        "avg_kick_metres": 1.2,
+        "goals": 0,
+        "total_points": 32
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 22,
+        "tries": 8
+      }
+    },
+    "ezra_mam": {
+      "full_name": "Ezra Mam",
+      "aliases": [
+        "ezra mam",
+        "mam",
+        "ezra"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Five-Eighth",
+      "status": "Contracted starting Five-Eighth for Brisbane Broncos (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 10,
+        "try_assists": 11,
+        "line_breaks": 13,
+        "tackle_breaks": 65,
+        "run_metres": 1444,
+        "avg_run_metres": 65.6,
+        "tackles": 360,
+        "tackle_efficiency": "73%",
+        "offloads": 6,
+        "kick_metres": 790,
+        "avg_kick_metres": 35.9,
+        "goals": 0,
+        "total_points": 40
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 60,
+        "tries": 27,
+        "grand_finals": 1
+      },
+      "major_honours": [
+        "2023 NRL Grand Final Hat-Trick (Brisbane Broncos)"
+      ]
+    },
+    "jordan_riki": {
+      "full_name": "Jordan Riki",
+      "aliases": [
+        "jordan riki",
+        "riki"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Second Row",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 5,
+        "try_assists": 0,
+        "line_breaks": 5,
+        "tackle_breaks": 48,
+        "run_metres": 2011,
+        "avg_run_metres": 91.4,
+        "tackles": 749,
+        "tackle_efficiency": "88%",
+        "offloads": 8,
+        "kick_metres": 59,
+        "avg_kick_metres": 2.7,
+        "goals": 0,
+        "total_points": 20
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 89,
+        "tries": 17,
+        "grand_finals": 1
+      }
+    },
+    "ben_talty": {
+      "full_name": "Ben Talty",
+      "aliases": [
+        "ben talty",
+        "talty"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Second Row",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 20,
+        "tries": 2,
+        "try_assists": 1,
+        "line_breaks": 2,
+        "tackle_breaks": 13,
+        "run_metres": 1289,
+        "avg_run_metres": 64.5,
+        "tackles": 454,
+        "tackle_efficiency": "90%",
+        "offloads": 4,
+        "goals": 0,
+        "total_points": 8
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "ben_hunt": {
+      "full_name": "Ben Hunt",
+      "aliases": [
+        "dozer",
+        "ben hunt",
+        "hunt"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Halfback",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 18,
+        "tries": 2,
+        "try_assists": 9,
+        "line_breaks": 3,
+        "tackle_breaks": 21,
+        "run_metres": 280,
+        "avg_run_metres": 15.6,
+        "tackles": 368,
+        "tackle_efficiency": "80%",
+        "offloads": 5,
+        "kick_metres": 3307,
+        "avg_kick_metres": 183.7,
+        "goals": 0,
+        "total_points": 8
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 334,
+        "tries": 80,
+        "goals": 78,
+        "points": 479,
+        "grand_finals": 1
+      }
+    },
+    "deine_mariner": {
+      "full_name": "Deine Mariner",
+      "aliases": [
+        "deine mariner",
+        "mariner"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Centre",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 18,
+        "tries": 4,
+        "try_assists": 2,
+        "line_breaks": 10,
+        "tackle_breaks": 76,
+        "run_metres": 2061,
+        "avg_run_metres": 114.5,
+        "tackles": 128,
+        "tackle_efficiency": "75%",
+        "offloads": 3,
+        "kick_metres": 114,
+        "avg_kick_metres": 6.3,
+        "goals": 0,
+        "total_points": 16
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 28,
+        "tries": 18
+      }
+    },
+    "cory_paix": {
+      "full_name": "Cory Paix",
+      "aliases": [
+        "paix",
+        "cory paix"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Hooker",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 18,
+        "tries": 2,
+        "try_assists": 0,
+        "line_breaks": 1,
+        "tackle_breaks": 3,
+        "run_metres": 211,
+        "avg_run_metres": 11.7,
+        "tackles": 632,
+        "tackle_efficiency": "93%",
+        "offloads": 0,
+        "kick_metres": 7,
+        "avg_kick_metres": 0.4,
+        "goals": 0,
+        "total_points": 8
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 54,
+        "tries": 4
+      }
+    },
+    "gehamat_shibasaki": {
+      "full_name": "Gehamat Shibasaki",
+      "aliases": [
+        "shibasaki",
+        "gehamat shibasaki"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Centre",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 16,
+        "tries": 3,
+        "try_assists": 0,
+        "line_breaks": 3,
+        "tackle_breaks": 33,
+        "run_metres": 1481,
+        "avg_run_metres": 92.6,
+        "tackles": 154,
+        "tackle_efficiency": "75%",
+        "offloads": 0,
+        "goals": 0,
+        "total_points": 12
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "jack_gosiewski": {
+      "full_name": "Jack Gosiewski",
+      "aliases": [
+        "jack gosiewski",
+        "gosiewski"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Second Row",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 13,
+        "tries": 0,
+        "try_assists": 0,
+        "line_breaks": 0,
+        "tackle_breaks": 2,
+        "run_metres": 546,
+        "avg_run_metres": 42.0,
+        "tackles": 304,
+        "tackle_efficiency": "89%",
+        "offloads": 3
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "vaa_semu": {
+      "full_name": "Va'a Semu",
+      "aliases": [
+        "va'a semu",
+        "semu"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Prop",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 13,
+        "tries": 0,
+        "try_assists": 0,
+        "line_breaks": 1,
+        "tackle_breaks": 6,
+        "run_metres": 645,
+        "avg_run_metres": 49.6,
+        "tackles": 203,
+        "tackle_efficiency": "94%",
+        "offloads": 1
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "grant_anderson": {
+      "full_name": "Grant Anderson",
+      "aliases": [
+        "grant anderson",
+        "anderson"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Wing",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 12,
+        "tries": 4,
+        "try_assists": 1,
+        "line_breaks": 6,
+        "tackle_breaks": 22,
+        "run_metres": 1266,
+        "avg_run_metres": 105.5,
+        "tackles": 81,
+        "tackle_efficiency": "75%",
+        "offloads": 6,
+        "kick_metres": 62,
+        "avg_kick_metres": 5.2,
+        "goals": 0,
+        "total_points": 16
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "brendan_piakura": {
+      "full_name": "Brendan Piakura",
+      "aliases": [
+        "brendan piakura",
+        "piakura"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Second Row",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 12,
+        "tries": 2,
+        "try_assists": 2,
+        "line_breaks": 1,
+        "tackle_breaks": 20,
+        "run_metres": 864,
+        "avg_run_metres": 72.0,
+        "tackles": 227,
+        "tackle_efficiency": "77%",
+        "offloads": 3,
+        "goals": 0,
+        "total_points": 8
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 35,
+        "tries": 7,
+        "grand_finals": 1
+      }
+    },
+    "jesse_arthars": {
+      "full_name": "Jesse Arthars",
+      "aliases": [
+        "jesse arthars",
+        "arthars"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Wing",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 10,
+        "tries": 5,
+        "try_assists": 1,
+        "line_breaks": 8,
+        "tackle_breaks": 27,
+        "run_metres": 1030,
+        "avg_run_metres": 103.0,
+        "tackles": 61,
+        "tackle_efficiency": "76%",
+        "offloads": 1,
+        "goals": 0,
+        "total_points": 20
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7,
+      "career_stats": {
+        "nrl_games": 75,
+        "tries": 29,
+        "grand_finals": 1
+      }
+    },
+    "thomas_duffy": {
+      "full_name": "Thomas Duffy",
+      "aliases": [
+        "thomas duffy",
+        "duffy"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Halfback",
+      "status": "Active Brisbane Broncos player (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 10,
+        "tries": 1,
+        "try_assists": 6,
+        "line_breaks": 2,
+        "tackle_breaks": 4,
+        "run_metres": 147,
+        "avg_run_metres": 14.7,
+        "tackles": 137,
+        "tackle_efficiency": "87%",
+        "offloads": 2,
+        "kick_metres": 1910,
+        "avg_kick_metres": 191.0,
+        "goals": 15,
+        "field_goals": 1,
+        "total_points": 35
+      },
+      "source": "fox_sports_lab",
+      "last_verified_ts": 1788599456.4009006,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     }
