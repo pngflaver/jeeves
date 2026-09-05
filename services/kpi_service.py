@@ -19,6 +19,7 @@ TOPIC_PATTERNS = {
     "Network Diagnostics": re.compile(r"\b(ping|traceroute|dns|dig|nmap|portscan|whois|http|curl|ssl|cert|ipinfo|latency|packet)\b", re.IGNORECASE),
     "Media & Streaming": re.compile(r"\b(movie|tv|series|episode|season|imdb|tmdb|actor|starring|film|show)\b", re.IGNORECASE),
     "Aviation & Flights": re.compile(r"\b(flight|airline|fly|airport|pom|bne|syd|cns|schedule|transit|route)\b", re.IGNORECASE),
+    "NRL & Rugby League": re.compile(r"\b(nrl|rugby league|broncos|maroons|state of origin|png chiefs|png nrl|kumuls|png hunters)\b", re.IGNORECASE),
     "General IT & Dev": re.compile(r"\b(python|docker|kubernetes|linux|bash|script|git|api|database|sql|cloud)\b", re.IGNORECASE),
     "Bot Identity / VIP": re.compile(r"\b(flavius|creator|who are you|who made you|jeeves|boss)\b", re.IGNORECASE),
 }
@@ -96,6 +97,8 @@ class KPIService:
             cat = "Aviation & Flights"
         elif command_name in ["place", "places", "venue", "locate"]:
             cat = "Local Places & Hours"
+        elif command_name in ["nrl", "rugby"]:
+            cat = "NRL & Rugby League"
         elif command_name in ["hardware", "sync_hardware"]:
             cat = "Hardware & Specs (EOL/EOS)"
         elif command_name in ["software", "sync_software"]:

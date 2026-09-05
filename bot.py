@@ -24,6 +24,7 @@ from services.profile_service import profile_service
 from services.movie_service import movie_service
 from services.kpi_service import kpi_service
 from services.places_service import places_service
+from services.nrl_service import nrl_service, NRL_VALIDATION_SYSTEM_PROMPT
 from services import network_tools
 
 # Configure logging
@@ -81,6 +82,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         f"• `/tv <title> [s] [e]` — Look up TV Show (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
         f"• `/flight <from> <to>` — Search flight routes & operating airlines (e.g. `/flight POM BNE`)\n"
         f"• `/place <name>` — Look up local business, operating hours, phone & map\n"
+        f"• `/nrl [team/query]` — Verified NRL news (Broncos, QLD Maroons, PNG Chiefs)\n"
         f"• `@{bot_user.username} <question>` — Mention in group chats\n"
         f"• `/hardware` — View tracked hardware inventory list\n"
         f"• `/software` — View tracked software & OS version list\n\n"
@@ -108,6 +110,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         f"📖 **Command Reference:**\n\n"
         f"🧠 **AI, Places & Media Knowledge:**\n"
         f"• `/ask <prompt>` — Ask hardware/software EOL, CLI configs, CVEs, or general IT questions\n"
+        f"• `/nrl [team/query]` — Verified NRL news (Broncos, QLD Maroons, PNG Chiefs)\n"
         f"• `/place <name>` — Look up local business, operating hours & phone (e.g. `/place CPL Vision City`)\n"
         f"• `/movie <title>` — Extract movie parameters (`{{id}}` from IMDb/TMDB)\n"
         f"• `/tv <title> [s] [e]` — Extract TV show parameters (`{{id}}`, `{{season}}`, `{{episode}}`)\n"
@@ -357,6 +360,29 @@ async def place_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     place_data = await places_service.lookup_place(query)
     card = places_service.format_place_card(place_data)
     await update.effective_message.reply_text(card, parse_mode=constants.ParseMode.MARKDOWN)
+
+@track_kpi_command("nrl")
+async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle /nrl command for verified rugby league updates."""
+    if not update.effective_chat or not is_chat_allowed(update.effective_chat.id):
+        return
+
+    query = " ".join(context.args).strip()
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=constants.ChatAction.TYPING)
+
+    if not query:
+        # Return priority pre-compiled briefing (Broncos, QLD Maroons, PNG Chiefs)
+        briefing = await nrl_service.get_priority_briefing()
+        header = (
+            "🏉 **NRL Intelligence & Priority Briefing**\n"
+            "*(Verified via official NRL, QRL, ABC, and PNG news)*\n\n"
+        )
+        footer = "\n\n💡 *Tip: Query specific topics, e.g.* `/nrl reece walsh` *or* `/nrl png chiefs`."
+        await update.effective_message.reply_text(header + briefing + footer, parse_mode=constants.ParseMode.MARKDOWN)
+    else:
+        # Live accredited search for specific inquiry
+        ans = await nrl_service.query_specific_nrl(query)
+        await update.effective_message.reply_text(ans, parse_mode=constants.ParseMode.MARKDOWN)
 
 # ==========================================
 # Network Diagnostic Commands
@@ -610,13 +636,21 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         wiki_info = None
 
         is_tech = True
+        custom_sys_prompt = None
+
         # 1. Check for Flight & Travel inquiries
         if flight_service.is_flight_query(prompt):
             is_tech = False
             logger.info(f"Identified flight schedule inquiry from chat {chat_id}: '{prompt}'")
             has_flight, search_results = await flight_service.get_flight_context(prompt)
+        # 2. Check for NRL Rugby League inquiries
+        elif nrl_service.is_nrl_query(prompt):
+            is_tech = False
+            custom_sys_prompt = NRL_VALIDATION_SYSTEM_PROMPT
+            logger.info(f"Identified NRL rugby league inquiry from chat {chat_id}: '{prompt}'")
+            search_results = await nrl_service.fetch_accredited_search(prompt)
         else:
-            # 2. Check for Flavius VIP or Personal Identity inquiries
+            # 3. Check for Flavius VIP or Personal Identity inquiries
             persona_intent = persona_service.classify_persona_intent(prompt)
             if persona_intent == "FLAVIUS_VIP":
                 is_tech = False
@@ -628,7 +662,7 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 # Try Wikipedia search for public figures (e.g. Alan Turing, Linus Torvalds)
                 wiki_info = await search_wikipedia(prompt)
             else:
-                # 3. Analyze technical vs general intent & fetch targeted info
+                # 4. Analyze technical vs general intent & fetch targeted info
                 intent, search_results = await technical_service.get_technical_context(prompt)
                 is_tech = (intent != "GENERAL_WEB")
                 if search_results:
@@ -644,7 +678,8 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             context_messages=context_msgs,
             wiki_info=wiki_info,
             search_results=search_results,
-            is_technical=is_tech
+            is_technical=is_tech,
+            custom_system_prompt=custom_sys_prompt
         )
 
         try:
@@ -697,8 +732,23 @@ async def post_init(application: Application) -> None:
             except Exception as e:
                 logger.error(f"Error in KPI heartbeat worker: {e}")
 
+    async def _nrl_worker():
+        # Hourly background refresh of verified priority NRL briefing
+        await asyncio.sleep(10)  # Initial wait on startup
+        while True:
+            try:
+                logger.info("Triggering scheduled NRL priority briefing sync...")
+                await nrl_service.refresh_priority_briefing()
+                logger.info("NRL priority briefing sync completed.")
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in NRL background sync worker: {e}")
+            await asyncio.sleep(3600)  # Every 1 hour
+
     asyncio.create_task(_daily_worker())
     asyncio.create_task(_kpi_heartbeat())
+    asyncio.create_task(_nrl_worker())
 
 def main() -> None:
     """Start the bot."""
@@ -717,6 +767,7 @@ def main() -> None:
     app.add_handler(CommandHandler("help", help_command))
     app.add_handler(CommandHandler("model", model_command))
     app.add_handler(CommandHandler("ask", ask_command))
+    app.add_handler(CommandHandler(["nrl", "rugby"], nrl_command))
     app.add_handler(CommandHandler(["movie", "movies", "imdb", "tmdb"], movie_command))
     app.add_handler(CommandHandler(["tv", "series"], tv_command))
     app.add_handler(CommandHandler(["flight", "flights"], flight_command))

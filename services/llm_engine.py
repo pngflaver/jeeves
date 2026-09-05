@@ -19,13 +19,19 @@ class LLMEngine:
         context_messages: Optional[List[Dict[str, str]]] = None,
         wiki_info: Optional[Dict[str, str]] = None,
         search_results: Optional[List[Dict[str, str]]] = None,
-        is_technical: bool = True
+        is_technical: bool = True,
+        custom_system_prompt: Optional[str] = None
     ) -> str:
         """
         Generate an expanded, evidence-based response using search results or Wikipedia.
-        Dynamically applies engineering-grade prompt or general assistant prompt.
+        Dynamically applies engineering-grade prompt, custom prompt, or general assistant prompt.
         """
-        sys_prompt = self.system_prompt if is_technical else getattr(config, "GENERAL_SYSTEM_PROMPT", self.system_prompt)
+        if custom_system_prompt:
+            sys_prompt = custom_system_prompt
+        elif is_technical:
+            sys_prompt = self.system_prompt
+        else:
+            sys_prompt = getattr(config, "GENERAL_SYSTEM_PROMPT", self.system_prompt)
         messages = [{"role": "system", "content": sys_prompt}]
 
         # Add recent conversation context (last 4 messages)

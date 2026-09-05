@@ -26,6 +26,8 @@ data/hardware_cache.json
 data/software_cache.json
 data/kpis.json
 data/kpis.txt
+data/nrl_cache.json
+nrl_cache.json
 
 # Logs
 *.log
