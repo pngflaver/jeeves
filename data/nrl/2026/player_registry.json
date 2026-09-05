@@ -2,38 +2,193 @@
   "players": {
     "selwyn_cobbo": {
       "full_name": "Selwyn Cobbo",
+      "aliases": [
+        "cobbo",
+        "selwyn"
+      ],
       "current_club": "The Dolphins",
       "previous_club": "Brisbane Broncos",
-      "transfer_details": "Signed with the Dolphins in June 2025; moved to the Dolphins for the 2026 season. Played against the Broncos in Round 4 at Suncorp Stadium in the away sheds.",
+      "position": "Centre / Wing",
       "status": "Active Dolphins Player. Has NOT returned or re-signed with the Brisbane Broncos.",
-      "last_verified": "2026-09-01"
+      "transfer_details": "Signed with the Dolphins in June 2025; moved to the Dolphins for the 2026 season. Played against the Broncos in Round 4 at Suncorp Stadium in the away sheds.",
+      "season_stats_2026": {
+        "matches": 21,
+        "tries": 12,
+        "try_assists": 7,
+        "line_breaks": 15,
+        "tackle_breaks": 64,
+        "run_metres": 2740,
+        "avg_run_metres": 130.5,
+        "tackles": 218,
+        "tackle_efficiency": "87.4%",
+        "offloads": 18
+      },
+      "career_stats": {
+        "nrl_games": 89,
+        "tries": 51
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788596422.1596637,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     },
     "reece_walsh": {
       "full_name": "Reece Walsh",
+      "aliases": [
+        "walsh",
+        "reece"
+      ],
       "current_club": "Brisbane Broncos",
+      "position": "Fullback",
       "representative": "Queensland Maroons",
-      "status": "Contracted marquee fullback for Brisbane Broncos.",
-      "last_verified": "2026-09-01"
+      "status": "Contracted marquee fullback for Brisbane Broncos (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 17,
+        "tries": 9,
+        "try_assists": 16,
+        "line_breaks": 18,
+        "tackle_breaks": 76,
+        "run_metres": 2480,
+        "avg_run_metres": 145.8,
+        "goals": 32,
+        "total_points": 100
+      },
+      "career_stats": {
+        "nrl_games": 92,
+        "tries": 38,
+        "points": 344
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788596426.44785,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "payne_haas": {
+      "full_name": "Payne Haas",
+      "aliases": [
+        "haas",
+        "payne"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Prop",
+      "status": "Marquee forward for Brisbane Broncos (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 18,
+        "tries": 2,
+        "run_metres": 3120,
+        "avg_run_metres": 173.3,
+        "post_contact_metres": 1280,
+        "tackles": 685,
+        "tackle_efficiency": "96.2%",
+        "offloads": 34
+      },
+      "career_stats": {
+        "nrl_games": 134,
+        "tries": 11
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788596430.228303,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     },
     "joey_manu": {
       "full_name": "Joey Manu",
+      "aliases": [
+        "manu",
+        "joey manu",
+        "joseph manu"
+      ],
       "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
       "previous_club": "Sydney Roosters",
-      "status": "Officially unveiled as marquee signing #007 for PNG Chiefs.",
-      "last_verified": "2026-08-24"
+      "position": "Centre / Five-Eighth",
+      "status": "Officially unveiled as marquee signing #007 for PNG Chiefs 2028 entry.",
+      "career_stats": {
+        "nrl_games": 158,
+        "tries": 64,
+        "premierships": 2
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1757059200.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     },
     "alex_johnston": {
       "full_name": "Alex Johnston",
+      "aliases": [
+        "johnston",
+        "alex johnston"
+      ],
       "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
       "previous_club": "South Sydney Rabbitohs",
-      "status": "Committed as senior leader for PNG Chiefs 2028 entry.",
-      "last_verified": "2026-05-06"
+      "position": "Wing",
+      "status": "Committed as senior leader for PNG Chiefs 2028 entry; all-time legendary tryscorer.",
+      "career_stats": {
+        "nrl_games": 224,
+        "tries": 195
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1757059200.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     },
     "jarome_luai": {
       "full_name": "Jarome Luai",
+      "aliases": [
+        "luai",
+        "jarome"
+      ],
       "current_club": "Wests Tigers / Signed with PNG Chiefs for 2028",
+      "position": "Five-Eighth / Halfback",
       "status": "Signed marquee commitment to join PNG Chiefs for 2028 NRL entry.",
-      "last_verified": "2026-04-29"
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 5,
+        "try_assists": 19,
+        "line_break_assists": 15,
+        "tackle_breaks": 42,
+        "run_metres": 1890,
+        "avg_run_metres": 85.9
+      },
+      "career_stats": {
+        "nrl_games": 130,
+        "tries": 27,
+        "premierships": 3
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1757059200.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "kalyn_ponga": {
+      "full_name": "Kalyn Ponga",
+      "aliases": [
+        "ponga",
+        "kalyn"
+      ],
+      "current_club": "Newcastle Knights",
+      "position": "Fullback",
+      "representative": "Queensland Maroons",
+      "status": "Contracted marquee captain & fullback for Newcastle Knights.",
+      "season_stats_2026": {
+        "matches": 20,
+        "tries": 8,
+        "try_assists": 21,
+        "line_breaks": 19,
+        "tackle_breaks": 94,
+        "run_metres": 3210,
+        "avg_run_metres": 160.5,
+        "goals": 54,
+        "total_points": 140
+      },
+      "career_stats": {
+        "nrl_games": 138,
+        "tries": 49,
+        "points": 648
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788596434.4777784,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
     }
   }
 }

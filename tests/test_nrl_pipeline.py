@@ -51,6 +51,18 @@ async def test_nrl_pipeline():
     assert "Current Club: The Dolphins" in acc_results[0]["snippet"]
     print(f"✅ Injected Ground Truth + {len(acc_results)-1} accredited live search sources successfully!\n")
 
+    print("=" * 65)
+    print("🏉 TEST 6: On-Demand Player Statistics Resolution & Card")
+    print("=" * 65)
+    stats_card = await nrl_service.query_specific_nrl("what are cobbo's latest stats ?")
+    print(stats_card)
+    assert "Selwyn Cobbo" in stats_card
+    assert "The Dolphins" in stats_card
+    assert "Tries Scored" in stats_card
+    assert "12" in stats_card
+    assert "2,740 m" in stats_card
+    print("✅ Verified on-demand player statistics card output!\n")
+
 if __name__ == "__main__":
     from services.nrl_service import NRL_VALIDATION_SYSTEM_PROMPT
     assert "CRITICAL FACT-CHECKING & TEMPORAL RULES" in NRL_VALIDATION_SYSTEM_PROMPT
