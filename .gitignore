@@ -28,6 +28,7 @@ data/kpis.json
 data/kpis.txt
 data/nrl_cache.json
 nrl_cache.json
+data/quality_records/*.jsonl
 
 # Logs
 *.log

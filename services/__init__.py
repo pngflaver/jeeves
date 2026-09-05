@@ -16,6 +16,7 @@ from .movie_service import MovieService, movie_service
 from .kpi_service import KPIService, kpi_service
 from .places_service import PlacesService, places_service
 from .nrl_service import NRLService, nrl_service
+from .quality_service import QualityService, quality_service
 
 __all__ = [
     "LLMEngine",
@@ -42,6 +43,8 @@ __all__ = [
     "places_service",
     "NRLService",
     "nrl_service",
+    "QualityService",
+    "quality_service",
 ]
 
 

@@ -25,6 +25,7 @@ from services.movie_service import movie_service
 from services.kpi_service import kpi_service
 from services.places_service import places_service
 from services.nrl_service import nrl_service, NRL_VALIDATION_SYSTEM_PROMPT
+from services.quality_service import quality_service
 from services import network_tools
 
 # Configure logging
@@ -378,11 +379,26 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
             "*(Verified via official NRL, QRL, ABC, and PNG news)*\n\n"
         )
         footer = "\n\n💡 *Tip: Query specific topics, e.g.* `/nrl reece walsh` *or* `/nrl png chiefs`."
-        await update.effective_message.reply_text(header + briefing + footer, parse_mode=constants.ParseMode.MARKDOWN)
+        full_text = header + briefing + footer
+        await update.effective_message.reply_text(full_text, parse_mode=constants.ParseMode.MARKDOWN)
+        quality_service.log_interaction(
+            command="nrl",
+            user=update.effective_user,
+            query="[Priority Briefing]",
+            response=full_text,
+            sources=None
+        )
     else:
         # Live accredited search for specific inquiry
         ans = await nrl_service.query_specific_nrl(query)
         await update.effective_message.reply_text(ans, parse_mode=constants.ParseMode.MARKDOWN)
+        quality_service.log_interaction(
+            command="nrl",
+            user=update.effective_user,
+            query=query,
+            response=ans,
+            sources=None
+        )
 
 # ==========================================
 # Network Diagnostic Commands
@@ -694,6 +710,14 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
                 response_text,
                 reply_to_message_id=message.message_id
             )
+
+        quality_service.log_interaction(
+            command="ask",
+            user=user,
+            query=prompt,
+            response=response_text,
+            sources=search_results
+        )
     except Exception as ai_err:
         ai_success = False
         raise ai_err
