@@ -506,45 +506,45 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         # 4. Check if query is asking for a specific player who needs on-demand compilation
         if nrl_service.is_player_query(query):
             matched_player = nrl_service.find_player_in_registry(query)
-            if matched_player:
-                p_key, p_data = matched_player
-                has_stats = "season_stats_2026" in p_data or "career_stats" in p_data
-                if not has_stats:
-                    p_name = p_data.get("full_name", p_key.replace("_", " ").title())
-                    interim_msg = await update.effective_message.reply_text(
-                        f"⏳ *Retrieving official 2026 match & career stats for {p_name}...*\n"
-                        f"_Please wait a few seconds while records are compiled._",
-                        parse_mode=constants.ParseMode.MARKDOWN
+            clean_name = nrl_service.extract_clean_player_name(query).title()
+            p_name = matched_player[1].get("full_name", clean_name) if matched_player else clean_name
+            has_stats = matched_player and ("season_stats_2026" in matched_player[1] or "career_stats" in matched_player[1])
+
+            if not has_stats:
+                interim_msg = await update.effective_message.reply_text(
+                    f"⏳ *Retrieving official statistics & career totals for {p_name}...*\n"
+                    f"_Please wait a few seconds while records are compiled._",
+                    parse_mode=constants.ParseMode.MARKDOWN
+                )
+                ans = await nrl_service.query_specific_nrl(query)
+                rec_id = quality_service.log_interaction(
+                    command="nrl",
+                    user=update.effective_user,
+                    query=query,
+                    response=ans,
+                    sources=None
+                )
+                reply_markup = None
+                if rec_id and not ans.startswith("❌"):
+                    reply_markup = InlineKeyboardMarkup([
+                        [
+                            InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                            InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                        ]
+                    ])
+                try:
+                    await interim_msg.edit_text(
+                        ans,
+                        parse_mode=constants.ParseMode.MARKDOWN,
+                        reply_markup=reply_markup
                     )
-                    ans = await nrl_service.query_specific_nrl(query)
-                    rec_id = quality_service.log_interaction(
-                        command="nrl",
-                        user=update.effective_user,
-                        query=query,
-                        response=ans,
-                        sources=None
+                except Exception as md_err:
+                    logger.warning(f"Markdown formatting failed in edited /nrl ({md_err}), sending as plain text.")
+                    await interim_msg.edit_text(
+                        ans,
+                        reply_markup=reply_markup
                     )
-                    reply_markup = None
-                    if rec_id:
-                        reply_markup = InlineKeyboardMarkup([
-                            [
-                                InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
-                                InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
-                            ]
-                        ])
-                    try:
-                        await interim_msg.edit_text(
-                            ans,
-                            parse_mode=constants.ParseMode.MARKDOWN,
-                            reply_markup=reply_markup
-                        )
-                    except Exception as md_err:
-                        logger.warning(f"Markdown formatting failed in edited /nrl ({md_err}), sending as plain text.")
-                        await interim_msg.edit_text(
-                            ans,
-                            reply_markup=reply_markup
-                        )
-                    return
+                return
 
         # 5. Live accredited search or single high-confidence stats card
         ans = await nrl_service.query_specific_nrl(query)

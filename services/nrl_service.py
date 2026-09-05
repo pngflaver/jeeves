@@ -173,14 +173,28 @@ class NRLService:
         """Check if query is specifically asking for a player profile or player statistics."""
         if self.is_stats_query(text):
             return True
-        clean = self.extract_clean_player_name(text)
+        clean = self.extract_clean_player_name(text).lower()
         tokens = clean.split()
-        if 1 <= len(tokens) <= 3:
-            if self.find_player_in_registry(text):
-                return True
-            suggs = self.suggest_players(text, max_candidates=1)
-            if suggs and suggs[0][2] >= 0.75:
-                return True
+
+        # 1. Matched in registry or active team squad lists
+        if self.find_player_in_registry(text):
+            return True
+        suggs = self.suggest_players(text, max_candidates=1)
+        if suggs and suggs[0][2] >= 0.75:
+            return True
+
+        # 2. Candidate 2-word player name (First + Last Name) that isn't a team or common non-player topic
+        if len(tokens) == 2:
+            if self.find_team_in_registry(text):
+                return False
+            non_player_phrases = {
+                "latest news", "grand final", "state origin", "team list", "late mail",
+                "round draw", "salary cap", "free agency", "minor premiership", "golden point"
+            }
+            if clean in non_player_phrases:
+                return False
+            return True
+
         return False
 
     def _get_all_players(self) -> Dict[str, Dict[str, Any]]:
@@ -356,16 +370,30 @@ class NRLService:
             for cand in candidate_strings:
                 cand_tokens.extend(cand.split())
 
-            for tok in clean_tokens:
-                for ctok in cand_tokens:
-                    if tok == ctok:
-                        score = max(score, 0.90)
-                    elif len(tok) >= 4 and len(ctok) >= 4 and is_close_typo(tok, ctok):
-                        score = max(score, 0.88)
-                    elif len(tok) >= 4 and len(ctok) >= 4:
-                        t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
-                        if t_ratio >= 0.78:
-                            score = max(score, t_ratio * 0.90)
+            if len(clean_tokens) >= 2:
+                # Require matching across both tokens
+                full_cand_tokens = full_name.split()
+                if len(full_cand_tokens) == len(clean_tokens):
+                    matched_toks = 0
+                    for q_t, c_t in zip(clean_tokens, full_cand_tokens):
+                        if q_t == c_t or (len(q_t) >= 4 and is_close_typo(q_t, c_t)):
+                            matched_toks += 1
+                    if matched_toks == len(clean_tokens):
+                        score = max(score, 0.92)
+                    elif matched_toks == 1:
+                        score = max(score, 0.50)
+            else:
+                # Single token query (e.g. "reynolds", "papali", "paix")
+                for tok in clean_tokens:
+                    for ctok in cand_tokens:
+                        if tok == ctok:
+                            score = max(score, 0.90)
+                        elif len(tok) >= 4 and len(ctok) >= 4 and is_close_typo(tok, ctok):
+                            score = max(score, 0.88)
+                        elif len(tok) >= 4 and len(ctok) >= 4:
+                            t_ratio = difflib.SequenceMatcher(None, tok, ctok).ratio()
+                            if t_ratio >= 0.78:
+                                score = max(score, t_ratio * 0.90)
 
             if any(clean in cand for cand in candidate_strings if len(clean) >= 4):
                 score = max(score, 0.88)
@@ -615,30 +643,97 @@ class NRLService:
         new_profile.setdefault("ttl_days", 7)
 
         if results:
-            combined_text = " ".join([f"{r.get('title', '')} {r.get('snippet', '')}" for r in results])
-            # Check for games played
-            games_m = re.search(r"(\d{1,3})\s+(?:career\s+)?(?:NRL\s+)?(?:games|matches|appearances)", combined_text, re.I)
-            tries_m = re.search(r"(\d{1,3})\s+(?:career\s+)?tries", combined_text, re.I)
-            pts_m = re.search(r"(\d{1,4})\s+(?:career\s+)?points", combined_text, re.I)
+            snippets = "\n".join([f"Title: {r.get('title', '')}\nSnippet: {r.get('snippet', '')}" for r in results])
+            try:
+                extraction_prompt = (
+                    f"Analyze the search results about '{full_name}'.\n"
+                    "Determine if this person is an official National Rugby League (NRL) player (active or retired).\n"
+                    "Return ONLY a JSON object matching this schema:\n"
+                    "{\n"
+                    '  "is_nrl_player": true or false,\n'
+                    '  "full_name": "Official Full Name",\n'
+                    '  "primary_clubs": "Main NRL Club(s) played for (e.g. Melbourne Storm)",\n'
+                    '  "position": "Primary position (e.g. Hooker, Prop, Fullback, Halfback)",\n'
+                    '  "is_retired": true or false,\n'
+                    '  "status": "Concise 1-line professional status (e.g. \'Retired NRL Legend & former Melbourne Storm captain (430 matches).\')",\n'
+                    '  "career_stats": {\n'
+                    '    "nrl_games": integer or null,\n'
+                    '    "tries": integer or null,\n'
+                    '    "goals": integer or null,\n'
+                    '    "points": integer or null,\n'
+                    '    "premierships": integer or null,\n'
+                    '    "grand_finals": integer or null\n'
+                    "  },\n"
+                    '  "major_honours": [\n'
+                    '    "Major career achievement 1",\n'
+                    '    "Major career achievement 2"\n'
+                    "  ]\n"
+                    "}\n"
+                    f"Search Results:\n{snippets}"
+                )
+                raw_json = await self.llm.generate_response(extraction_prompt, is_technical=False)
+                clean_json = re.sub(r"^```json\s*|\s*```$", "", raw_json.strip(), flags=re.MULTILINE)
+                m = re.search(r"\{.*\}", clean_json, re.DOTALL)
+                if m:
+                    parsed = json.loads(m.group(0))
+                    if not parsed.get("is_nrl_player", False):
+                        logger.info(f"LLM determined '{full_name}' is not an NRL player.")
+                        return None
 
-            career_stats = new_profile.get("career_stats", {})
-            if games_m and "nrl_games" not in career_stats:
-                career_stats["nrl_games"] = int(games_m.group(1))
-            if tries_m and "tries" not in career_stats:
-                career_stats["tries"] = int(tries_m.group(1))
-            if pts_m and "points" not in career_stats:
-                career_stats["points"] = int(pts_m.group(1))
+                    if parsed.get("full_name"):
+                        new_profile["full_name"] = parsed["full_name"]
+                    if parsed.get("primary_clubs"):
+                        new_profile["current_club"] = parsed["primary_clubs"]
+                    if parsed.get("position"):
+                        new_profile["position"] = parsed["position"].title()
+                    if parsed.get("status"):
+                        new_profile["status"] = parsed["status"]
 
-            if career_stats:
-                new_profile["career_stats"] = career_stats
+                    is_ret = parsed.get("is_retired", False)
+                    if is_ret:
+                        new_profile["ttl_days"] = 365
+                        if "retired" not in new_profile.get("status", "").lower():
+                            new_profile["status"] = f"Retired NRL player ({new_profile.get('current_club', 'NRL')}). Records archived on-file."
 
-            # Check if retired
-            if any(term in combined_text.lower() for term in ["retired", "announced his retirement", "farewell", "hang up his boots"]):
-                if "retired" not in new_profile.get("status", "").lower():
-                    new_profile["status"] = f"Retired NRL player ({club}). Records archived on-file."
-                    new_profile["ttl_days"] = 365
-            else:
-                new_profile.setdefault("status", f"Active {club} player on-file.")
+                    c_stats = parsed.get("career_stats")
+                    if isinstance(c_stats, dict):
+                        clean_c_stats = {}
+                        for k, v in c_stats.items():
+                            if v is not None:
+                                try:
+                                    clean_c_stats[k] = int(str(v).replace(",", "").strip())
+                                except (ValueError, TypeError):
+                                    pass
+                        if clean_c_stats:
+                            new_profile["career_stats"] = clean_c_stats
+
+                    honours = parsed.get("major_honours")
+                    if isinstance(honours, list) and honours:
+                        new_profile["major_honours"] = [str(h) for h in honours if h]
+            except Exception as e:
+                logger.warning(f"LLM extraction for '{full_name}' failed ({e}), falling back to regex extraction.")
+                combined_text = " ".join([f"{r.get('title', '')} {r.get('snippet', '')}" for r in results])
+                games_m = re.search(r"(\d{1,3})\s+(?:career\s+)?(?:NRL\s+)?(?:games|matches|appearances)", combined_text, re.I)
+                tries_m = re.search(r"(\d{1,3})\s+(?:career\s+)?tries", combined_text, re.I)
+                pts_m = re.search(r"(\d{1,4})\s+(?:career\s+)?points", combined_text, re.I)
+
+                career_stats = new_profile.get("career_stats", {})
+                if games_m and "nrl_games" not in career_stats:
+                    career_stats["nrl_games"] = int(games_m.group(1))
+                if tries_m and "tries" not in career_stats:
+                    career_stats["tries"] = int(tries_m.group(1))
+                if pts_m and "points" not in career_stats:
+                    career_stats["points"] = int(pts_m.group(1))
+
+                if career_stats:
+                    new_profile["career_stats"] = career_stats
+
+                if any(term in combined_text.lower() for term in ["retired", "announced his retirement", "farewell", "hang up his boots"]):
+                    if "retired" not in new_profile.get("status", "").lower():
+                        new_profile["status"] = f"Retired NRL player ({club}). Records archived on-file."
+                        new_profile["ttl_days"] = 365
+                else:
+                    new_profile.setdefault("status", f"Active {club} player on-file.")
         else:
             if "status" not in new_profile:
                 new_profile["status"] = f"Active {club} squad list on-file. Full statistics currently synchronizing."
@@ -826,6 +921,9 @@ class NRLService:
             if team_match:
                 logger.info(f"Serving instant verified team stats card for '{team_match[1].get('name')}'")
                 return self.format_team_stats_card(team_match[1])
+
+            clean_name = self.extract_clean_player_name(query).title()
+            return f"❌ No official NRL career records found for *{clean_name}*. Please check the spelling or query another NRL player or club."
 
         # 3. Direct team inquiry (e.g. "/nrl broncos", "/nrl storm record")
         team_match = self.find_team_in_registry(query)
