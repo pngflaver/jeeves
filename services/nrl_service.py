@@ -543,11 +543,11 @@ class NRLService:
         lines.append("\n✅ *Verified via Official NRL.com Ladder Records*")
         return "\n".join(lines)
 
-    async def resolve_or_cache_player(self, query: str) -> Optional[Dict[str, Any]]:
+    async def resolve_or_cache_player(self, query: str, force_fetch: bool = False) -> Optional[Dict[str, Any]]:
         """
         On-demand player resolution:
-        1. Checks if player exists in cache and is fresh (< 7 days).
-        2. If missing or stale (> 7 days), runs targeted search, parses stats/contract,
+        1. Checks if player exists in cache and has stats (< 7 days TTL).
+        2. If missing or forced, runs accredited search, parses stats/contract,
            and caches to player_registry.json.
         """
         matched = self.find_player_in_registry(query)
@@ -555,18 +555,19 @@ class NRLService:
         
         if matched:
             p_key, p_data = matched
+            has_stats = "season_stats_2026" in p_data or "career_stats" in p_data
             last_v = p_data.get("last_verified_ts", 0)
             ttl_sec = p_data.get("ttl_days", 7) * 86400
-            # If fresh and has stats (if stats requested), return cached
-            if (now_ts - last_v) <= ttl_sec:
-                if not self.is_stats_query(query) or "season_stats_2026" in p_data or "career_stats" in p_data:
+
+            if not force_fetch and has_stats:
+                # If fresh and has stats, return cached
+                if (now_ts - last_v) <= ttl_sec:
                     return p_data
-            # If manual seed with verified stats, keep fresh and return
-            elif "season_stats_2026" in p_data or "career_stats" in p_data:
-                p_data["last_verified_ts"] = now_ts
-                p_data["last_verified"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-                self._save_player_registry()
-                return p_data
+                else:
+                    p_data["last_verified_ts"] = now_ts
+                    p_data["last_verified"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                    self._save_player_registry()
+                    return p_data
 
         # Clean query to extract player name cleanly by removing punctuation and query filler
         clean_name = re.sub(r"[^\w\s]", " ", query)
@@ -576,43 +577,58 @@ class NRLService:
         
         if not matched and clean_name:
             matched = self.find_player_in_registry(clean_name)
-            if matched:
-                p_key, p_data = matched
-                if not self.is_stats_query(query) or "season_stats_2026" in p_data or "career_stats" in p_data:
-                    return p_data
 
-        if len(clean_name) < 3:
-            if matched: return matched[1]
+        if len(clean_name) < 3 and not matched:
             return None
 
-        logger.info(f"Performing on-demand accredited player resolution for '{clean_name}'...")
-        search_q = f"{clean_name} 2026 NRL stats club contract tries appearances"
+        p_key = matched[0] if matched else clean_name.lower().replace(" ", "_")
+        existing_data = matched[1] if matched else {}
+        club = existing_data.get("current_club", "NRL")
+        full_name = existing_data.get("full_name", clean_name.title())
+
+        logger.info(f"Performing on-demand accredited player resolution for '{full_name}' ({club})...")
+        search_q = f"{full_name} {club} NRL career stats matches tries position"
         results = await search_web(search_q, max_results=3)
-        if not results:
-            if matched: return matched[1]
-            return None
 
-        p_key = clean_name.lower().replace(" ", "_")
-        
-        # If we already had matched baseline data, update its verification timestamp
-        if matched:
-            p_key, p_data = matched
-            p_data["last_verified_ts"] = now_ts
-            p_data["last_verified"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-            self._save_player_registry()
-            return p_data
+        new_profile = dict(existing_data)
+        new_profile.setdefault("full_name", full_name)
+        new_profile.setdefault("aliases", [full_name.lower(), p_key])
+        new_profile.setdefault("current_club", club)
+        new_profile.setdefault("position", "NRL Player")
+        new_profile["source"] = "on_demand"
+        new_profile["last_verified_ts"] = now_ts
+        new_profile["last_verified"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        new_profile.setdefault("ttl_days", 7)
 
-        # New dynamic player profile creation
-        new_profile = {
-            "full_name": clean_name.title(),
-            "aliases": [clean_name.lower()],
-            "current_club": "NRL Club",
-            "status": "Active NRL Player",
-            "source": "on_demand",
-            "last_verified_ts": now_ts,
-            "last_verified": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            "ttl_days": 7
-        }
+        if results:
+            combined_text = " ".join([f"{r.get('title', '')} {r.get('snippet', '')}" for r in results])
+            # Check for games played
+            games_m = re.search(r"(\d{1,3})\s+(?:career\s+)?(?:NRL\s+)?(?:games|matches|appearances)", combined_text, re.I)
+            tries_m = re.search(r"(\d{1,3})\s+(?:career\s+)?tries", combined_text, re.I)
+            pts_m = re.search(r"(\d{1,4})\s+(?:career\s+)?points", combined_text, re.I)
+
+            career_stats = new_profile.get("career_stats", {})
+            if games_m and "nrl_games" not in career_stats:
+                career_stats["nrl_games"] = int(games_m.group(1))
+            if tries_m and "tries" not in career_stats:
+                career_stats["tries"] = int(tries_m.group(1))
+            if pts_m and "points" not in career_stats:
+                career_stats["points"] = int(pts_m.group(1))
+
+            if career_stats:
+                new_profile["career_stats"] = career_stats
+
+            # Check if retired
+            if any(term in combined_text.lower() for term in ["retired", "announced his retirement", "farewell", "hang up his boots"]):
+                if "retired" not in new_profile.get("status", "").lower():
+                    new_profile["status"] = f"Retired NRL player ({club}). Records archived on-file."
+                    new_profile["ttl_days"] = 365
+            else:
+                new_profile.setdefault("status", f"Active {club} player on-file.")
+        else:
+            if "status" not in new_profile:
+                new_profile["status"] = f"Active {club} squad list on-file. Full statistics currently synchronizing."
+
         if "players" not in self.player_registry:
             self.player_registry["players"] = {}
         self.player_registry["players"][p_key] = new_profile

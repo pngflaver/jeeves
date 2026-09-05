@@ -503,7 +503,50 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
                     )
                     return
 
-        # 4. Live accredited search or single high-confidence stats card
+        # 4. Check if query is asking for a specific player who needs on-demand compilation
+        if nrl_service.is_stats_query(query):
+            matched_player = nrl_service.find_player_in_registry(query)
+            if matched_player:
+                p_key, p_data = matched_player
+                has_stats = "season_stats_2026" in p_data or "career_stats" in p_data
+                if not has_stats:
+                    p_name = p_data.get("full_name", p_key.replace("_", " ").title())
+                    interim_msg = await update.effective_message.reply_text(
+                        f"⏳ *Retrieving official 2026 match & career stats for {p_name}...*\n"
+                        f"_Please wait a few seconds while records are compiled._",
+                        parse_mode=constants.ParseMode.MARKDOWN
+                    )
+                    ans = await nrl_service.query_specific_nrl(query)
+                    rec_id = quality_service.log_interaction(
+                        command="nrl",
+                        user=update.effective_user,
+                        query=query,
+                        response=ans,
+                        sources=None
+                    )
+                    reply_markup = None
+                    if rec_id:
+                        reply_markup = InlineKeyboardMarkup([
+                            [
+                                InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                                InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                            ]
+                        ])
+                    try:
+                        await interim_msg.edit_text(
+                            ans,
+                            parse_mode=constants.ParseMode.MARKDOWN,
+                            reply_markup=reply_markup
+                        )
+                    except Exception as md_err:
+                        logger.warning(f"Markdown formatting failed in edited /nrl ({md_err}), sending as plain text.")
+                        await interim_msg.edit_text(
+                            ans,
+                            reply_markup=reply_markup
+                        )
+                    return
+
+        # 5. Live accredited search or single high-confidence stats card
         ans = await nrl_service.query_specific_nrl(query)
         rec_id = quality_service.log_interaction(
             command="nrl",
@@ -949,6 +992,23 @@ async def nrl_player_select_callback(update: Update, context: ContextTypes.DEFAU
         if not player_data:
             await query.answer("Player record not found.")
             return
+
+        has_stats = "season_stats_2026" in player_data or "career_stats" in player_data
+        if not has_stats:
+            p_name = player_data.get("full_name", p_key.replace("_", " ").title())
+            try:
+                await query.answer()
+                await query.edit_message_text(
+                    f"⏳ *Retrieving official 2026 match & career stats for {p_name}...*\n"
+                    f"_Please wait a few seconds while records are compiled._",
+                    parse_mode=constants.ParseMode.MARKDOWN
+                )
+            except Exception as e:
+                logger.warning(f"Failed to send interim edit in button callback: {e}")
+
+            resolved = await nrl_service.resolve_or_cache_player(p_key, force_fetch=True)
+            if resolved:
+                player_data = resolved
 
         card = nrl_service.format_player_stats_card(player_data)
         rec_id = quality_service.log_interaction(

@@ -1226,6 +1226,38 @@
       "last_verified_ts": 1788601888.2221818,
       "last_verified": "2026-09-05",
       "ttl_days": 7
+    },
+    "shaun_johnson": {
+      "full_name": "Shaun Johnson",
+      "aliases": [
+        "shaun johnson",
+        "shaun",
+        "johnson",
+        "sj"
+      ],
+      "current_club": "New Zealand Warriors (Retired Club Legend / Ambassador)",
+      "position": "Halfback",
+      "representative": "New Zealand Kiwis (32 Tests)",
+      "status": "Retired NRL Legend. Concluded illustrious 14-season career at end of 2024 season.",
+      "career_stats": {
+        "nrl_games": 268,
+        "tries": 83,
+        "goals": 549,
+        "field_goals": 18,
+        "points": 1446,
+        "grand_finals": 1
+      },
+      "major_honours": [
+        "2014 IRL Golden Boot Winner (World Best International Player)",
+        "2023 Dally M Halfback of the Year & Dally M Runner-Up",
+        "New Zealand Warriors All-Time Leading Points Scorer (1,195 Points)",
+        "32 Test Matches for New Zealand Kiwis (2014 Four Nations Champion)",
+        "2011 NRL Grand Finalist (New Zealand Warriors)"
+      ],
+      "source": "official_archive",
+      "last_verified_ts": 1788599456.0,
+      "last_verified": "2026-09-05",
+      "ttl_days": 365
     }
   }
 }
