@@ -1,5 +1,40 @@
 {
   "players": {
+    "adam_reynolds": {
+      "full_name": "Adam Reynolds",
+      "aliases": [
+        "reynolds",
+        "adam reynolds",
+        "reyno"
+      ],
+      "current_club": "Brisbane Broncos",
+      "previous_club": "South Sydney Rabbitohs",
+      "position": "Halfback / Captain",
+      "status": "Active Brisbane Broncos Captain & Halfback. Regular season ended (Broncos finished 12th, season over).",
+      "season_stats_2026": {
+        "matches": 15,
+        "tries": 3,
+        "try_assists": 14,
+        "goals": 48,
+        "field_goals": 2,
+        "total_points": 110,
+        "kick_metres": 6450,
+        "avg_kick_metres": 430.0,
+        "tackles": 260,
+        "tackle_efficiency": "88.2%"
+      },
+      "career_stats": {
+        "nrl_games": 289,
+        "tries": 47,
+        "goals": 1058,
+        "total_points": 2346,
+        "premierships": 1
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
     "selwyn_cobbo": {
       "full_name": "Selwyn Cobbo",
       "aliases": [
@@ -28,7 +63,7 @@
         "tries": 51
       },
       "source": "manual_seed",
-      "last_verified_ts": 1788596422.1596637,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -59,7 +94,7 @@
         "points": 344
       },
       "source": "manual_seed",
-      "last_verified_ts": 1788596426.44785,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -87,7 +122,122 @@
         "tries": 11
       },
       "source": "manual_seed",
-      "last_verified_ts": 1788596430.228303,
+      "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "patrick_carrigan": {
+      "full_name": "Patrick Carrigan",
+      "aliases": [
+        "carrigan",
+        "patty carrigan"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Lock",
+      "representative": "Queensland Maroons",
+      "status": "Co-captain and Lock forward for Brisbane Broncos (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 1,
+        "run_metres": 3650,
+        "avg_run_metres": 165.9,
+        "tackles": 842,
+        "tackle_efficiency": "95.8%",
+        "offloads": 41
+      },
+      "career_stats": {
+        "nrl_games": 118,
+        "tries": 3
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "kotoni_staggs": {
+      "full_name": "Kotoni Staggs",
+      "aliases": [
+        "staggs",
+        "kotoni"
+      ],
+      "current_club": "Brisbane Broncos",
+      "position": "Centre",
+      "status": "Starting strike centre for Brisbane Broncos (season ended; finished 12th).",
+      "season_stats_2026": {
+        "matches": 21,
+        "tries": 10,
+        "try_assists": 6,
+        "line_breaks": 14,
+        "tackle_breaks": 78,
+        "run_metres": 2610,
+        "avg_run_metres": 124.3,
+        "goals": 24,
+        "total_points": 88
+      },
+      "career_stats": {
+        "nrl_games": 126,
+        "tries": 52,
+        "points": 396
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "hamiso_tabuai_fidow": {
+      "full_name": "Hamiso Tabuai-Fidow",
+      "aliases": [
+        "hammer",
+        "tabuai-fidow",
+        "hamiso"
+      ],
+      "current_club": "The Dolphins",
+      "position": "Fullback / Centre",
+      "representative": "Queensland Maroons",
+      "status": "Marquee fullback & tryscorer for The Dolphins.",
+      "season_stats_2026": {
+        "matches": 20,
+        "tries": 15,
+        "try_assists": 9,
+        "line_breaks": 21,
+        "tackle_breaks": 72,
+        "run_metres": 2940,
+        "avg_run_metres": 147.0
+      },
+      "career_stats": {
+        "nrl_games": 102,
+        "tries": 61
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788598777.32468,
+      "last_verified": "2026-09-05",
+      "ttl_days": 7
+    },
+    "herbie_farnworth": {
+      "full_name": "Herbie Farnworth",
+      "aliases": [
+        "farnworth",
+        "herbie"
+      ],
+      "current_club": "The Dolphins",
+      "previous_club": "Brisbane Broncos",
+      "position": "Centre",
+      "status": "Star centre for The Dolphins (transferred from Broncos for 2024 season).",
+      "season_stats_2026": {
+        "matches": 22,
+        "tries": 11,
+        "try_assists": 8,
+        "line_breaks": 16,
+        "tackle_breaks": 88,
+        "run_metres": 3410,
+        "avg_run_metres": 155.0
+      },
+      "career_stats": {
+        "nrl_games": 114,
+        "tries": 49
+      },
+      "source": "manual_seed",
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -108,7 +258,7 @@
         "premierships": 2
       },
       "source": "manual_seed",
-      "last_verified_ts": 1757059200.0,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -127,7 +277,7 @@
         "tries": 195
       },
       "source": "manual_seed",
-      "last_verified_ts": 1757059200.0,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -155,7 +305,7 @@
         "premierships": 3
       },
       "source": "manual_seed",
-      "last_verified_ts": 1757059200.0,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     },
@@ -186,7 +336,7 @@
         "points": 648
       },
       "source": "manual_seed",
-      "last_verified_ts": 1788596434.4777784,
+      "last_verified_ts": 1788598777.32468,
       "last_verified": "2026-09-05",
       "ttl_days": 7
     }

@@ -2,11 +2,12 @@ import logging
 import re
 import sys
 import asyncio
-from telegram import Update, constants
+from telegram import Update, constants, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
     MessageHandler,
+    CallbackQueryHandler,
     ContextTypes,
     filters,
 )
@@ -380,25 +381,63 @@ async def nrl_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
         footer = "\n\n💡 *Tip: Query specific topics, e.g.* `/nrl reece walsh` *or* `/nrl png chiefs`."
         full_text = header + briefing + footer
-        await update.effective_message.reply_text(full_text, parse_mode=constants.ParseMode.MARKDOWN)
-        quality_service.log_interaction(
+        rec_id = quality_service.log_interaction(
             command="nrl",
             user=update.effective_user,
             query="[Priority Briefing]",
             response=full_text,
             sources=None
         )
+        reply_markup = None
+        if rec_id:
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ])
+        try:
+            await update.effective_message.reply_text(
+                full_text,
+                parse_mode=constants.ParseMode.MARKDOWN,
+                reply_markup=reply_markup
+            )
+        except Exception as md_err:
+            logger.warning(f"Markdown formatting failed in /nrl ({md_err}), sending as plain text.")
+            await update.effective_message.reply_text(
+                full_text,
+                reply_markup=reply_markup
+            )
     else:
         # Live accredited search for specific inquiry
         ans = await nrl_service.query_specific_nrl(query)
-        await update.effective_message.reply_text(ans, parse_mode=constants.ParseMode.MARKDOWN)
-        quality_service.log_interaction(
+        rec_id = quality_service.log_interaction(
             command="nrl",
             user=update.effective_user,
             query=query,
             response=ans,
             sources=None
         )
+        reply_markup = None
+        if rec_id:
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ])
+        try:
+            await update.effective_message.reply_text(
+                ans,
+                parse_mode=constants.ParseMode.MARKDOWN,
+                reply_markup=reply_markup
+            )
+        except Exception as md_err:
+            logger.warning(f"Markdown formatting failed in /nrl ({md_err}), sending as plain text.")
+            await update.effective_message.reply_text(
+                ans,
+                reply_markup=reply_markup
+            )
 
 # ==========================================
 # Network Diagnostic Commands
@@ -698,26 +737,36 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             custom_system_prompt=custom_sys_prompt
         )
 
-        try:
-            await message.reply_text(
-                response_text,
-                reply_to_message_id=message.message_id,
-                parse_mode=constants.ParseMode.MARKDOWN
-            )
-        except Exception as md_err:
-            logger.warning(f"Markdown formatting failed ({md_err}), sending as plain text.")
-            await message.reply_text(
-                response_text,
-                reply_to_message_id=message.message_id
-            )
-
-        quality_service.log_interaction(
+        rec_id = quality_service.log_interaction(
             command="ask",
             user=user,
             query=prompt,
             response=response_text,
             sources=search_results
         )
+        reply_markup = None
+        if rec_id:
+            reply_markup = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("👍 Yes", callback_data=f"qf:yes:{rec_id}"),
+                    InlineKeyboardButton("👎 No", callback_data=f"qf:no:{rec_id}")
+                ]
+            ])
+
+        try:
+            await message.reply_text(
+                response_text,
+                reply_to_message_id=message.message_id,
+                parse_mode=constants.ParseMode.MARKDOWN,
+                reply_markup=reply_markup
+            )
+        except Exception as md_err:
+            logger.warning(f"Markdown formatting failed ({md_err}), sending as plain text.")
+            await message.reply_text(
+                response_text,
+                reply_to_message_id=message.message_id,
+                reply_markup=reply_markup
+            )
     except Exception as ai_err:
         ai_success = False
         raise ai_err
@@ -731,6 +780,33 @@ async def process_and_reply(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             duration_ms=ai_duration_ms,
             success=ai_success
         )
+
+# ==========================================
+# Quality Feedback Callback
+# ==========================================
+
+async def quality_feedback_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle thumbs up/down quality feedback button presses."""
+    query = update.callback_query
+    if not query:
+        return
+    data = query.data or ""
+    if data == "none":
+        await query.answer()
+        return
+
+    parts = data.split(":")
+    if len(parts) == 3 and parts[0] == "qf":
+        verdict, rec_id = parts[1], parts[2]
+        quality_service.record_user_verdict(rec_id, verdict)
+        label = "Feedback: 👍 Accurate" if verdict == "yes" else "Feedback: 👎 Flagged for review"
+        try:
+            await query.answer("Thank you for your feedback!")
+            await query.edit_message_reply_markup(
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton(label, callback_data="none")]])
+            )
+        except Exception as e:
+            logger.warning(f"Failed to update quality feedback markup: {e}")
 
 async def post_init(application: Application) -> None:
     """Run background scheduled tasks after bot startup."""
@@ -810,6 +886,9 @@ def main() -> None:
     app.add_handler(CommandHandler(["http", "curl"], http_command))
     app.add_handler(CommandHandler(["ssl", "cert"], ssl_command))
     app.add_handler(CommandHandler(["ipinfo", "ip"], ipinfo_command))
+
+    # Quality Feedback Callback Handler
+    app.add_handler(CallbackQueryHandler(quality_feedback_callback, pattern=r"^(qf:|none)"))
 
     # General Chat / Mention Message Handler
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))

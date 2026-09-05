@@ -105,6 +105,27 @@ class QualityService:
 
         return records
 
+    def record_user_verdict(self, record_id: str, verdict: str) -> bool:
+        """Update a pending record with user thumbs rating (yes or no)."""
+        all_pending = self.get_pending_records()
+        updated = False
+        for r in all_pending:
+            if r.get("id") == record_id:
+                r["user_verdict"] = verdict.lower()
+                r["user_rated_at"] = datetime.now(timezone.utc).isoformat()
+                updated = True
+                break
+
+        if updated:
+            try:
+                with open(self.pending_file, "w", encoding="utf-8") as f:
+                    for r in all_pending:
+                        f.write(json.dumps(r, ensure_ascii=False) + "\n")
+                return True
+            except Exception as e:
+                logger.error(f"Error updating user verdict in {self.pending_file}: {e}")
+        return False
+
     def get_processed_records(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Retrieve recent processed records from processed.jsonl."""
         records = []

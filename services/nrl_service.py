@@ -23,8 +23,12 @@ NRL_VALIDATION_SYSTEM_PROMPT = (
     "You are the official NRL (National Rugby League) specialist for Jeeves.\n"
     "CRITICAL FACT-CHECKING & TEMPORAL RULES:\n"
     "1. Regular rounds for NRL are FINISHED. The Brisbane Broncos finished 12th, missed the top 8, and their season is OVER with NO games left this year.\n"
-    "2. Player Contract Status:\n"
-    "   - Selwyn Cobbo left the Brisbane Broncos and plays for The Dolphins. He is NOT returning to the Broncos.\n"
+    "2. Player Realities & Positions:\n"
+    "   - Adam Reynolds is the HALFBACK and CAPTAIN of the Brisbane Broncos (he is NOT a prop). He wears jersey #7.\n"
+    "   - Payne Haas is the PROP forward for the Brisbane Broncos.\n"
+    "   - Reece Walsh is the FULLBACK for the Brisbane Broncos.\n"
+    "   - Patrick Carrigan is the LOCK forward for the Brisbane Broncos.\n"
+    "   - Selwyn Cobbo left the Brisbane Broncos and plays for The Dolphins (Centre/Wing). He is NOT returning to the Broncos.\n"
     "   - If asked if Selwyn Cobbo is returning to the Brisbane Broncos, state clearly that NO, he is not returning to the Broncos; he is an active Dolphins player.\n"
     "   - Playing in the away sheds at Suncorp was a past match in Round 4 where he played AGAINST the Broncos, not a return to the team.\n"
     "3. Sources are tagged with freshness (🟢 Past 7 Days vs 🔴 Historical). Prioritize the past 7 days. Treat news older than 7 days as past history.\n"
@@ -168,18 +172,25 @@ class NRLService:
             if "run_metres" in stats_2026:
                 avg = stats_2026.get('avg_run_metres', round(stats_2026['run_metres'] / max(stats_2026.get('matches', 1), 1), 1))
                 lines.append(f"• **Total Run Metres:** {stats_2026['run_metres']:,} m (Avg: {avg} m/game)")
+            if "kick_metres" in stats_2026:
+                avg_k = stats_2026.get('avg_kick_metres', round(stats_2026['kick_metres'] / max(stats_2026.get('matches', 1), 1), 1))
+                lines.append(f"• **Kick Metres:** {stats_2026['kick_metres']:,} m (Avg: {avg_k} m/game)")
+            if "goals" in stats_2026:
+                fg_text = f" | **Field Goals:** {stats_2026['field_goals']}" if "field_goals" in stats_2026 else ""
+                lines.append(f"• **Goals:** {stats_2026['goals']}{fg_text} (Total Points: {stats_2026.get('total_points', 0)})")
             if "tackles" in stats_2026:
                 eff = f" ({stats_2026['tackle_efficiency']} efficiency)" if "tackle_efficiency" in stats_2026 else ""
                 lines.append(f"• **Tackles:** {stats_2026['tackles']}{eff}")
             if "offloads" in stats_2026: lines.append(f"• **Offloads:** {stats_2026['offloads']}")
-            if "goals" in stats_2026: lines.append(f"• **Goals:** {stats_2026['goals']} (Total Points: {stats_2026.get('total_points', 0)})")
             lines.append("")
 
         if career:
             lines.append("🏆 **Career Totals:**")
             if "nrl_games" in career: lines.append(f"• **Career NRL Matches:** {career['nrl_games']}")
             if "tries" in career: lines.append(f"• **Career Tries:** {career['tries']}")
-            if "points" in career: lines.append(f"• **Career Points:** {career['points']}")
+            if "goals" in career: lines.append(f"• **Career Goals:** {career['goals']:,}")
+            pts = career.get("points") or career.get("total_points")
+            if pts: lines.append(f"• **Career Points:** {pts:,}")
             if "premierships" in career: lines.append(f"• **Premierships:** {career['premierships']}")
             lines.append("")
 
@@ -204,14 +215,28 @@ class NRLService:
             ttl_sec = p_data.get("ttl_days", 7) * 86400
             # If fresh and has stats (if stats requested), return cached
             if (now_ts - last_v) <= ttl_sec:
-                if not self.is_stats_query(query) or "season_stats_2026" in p_data:
+                if not self.is_stats_query(query) or "season_stats_2026" in p_data or "career_stats" in p_data:
+                    return p_data
+            # If manual seed with verified stats, keep fresh and return
+            elif "season_stats_2026" in p_data or "career_stats" in p_data:
+                p_data["last_verified_ts"] = now_ts
+                p_data["last_verified"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+                self._save_player_registry()
+                return p_data
+
+        # Clean query to extract player name cleanly by removing punctuation and query filler
+        clean_name = re.sub(r"[^\w\s]", " ", query)
+        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", "the", "for", "his", "profile", "tell me about"]:
+            clean_name = re.sub(rf"\b{remove_word}\b", " ", clean_name, flags=re.I)
+        clean_name = " ".join(clean_name.split()).strip()
+        
+        if not matched and clean_name:
+            matched = self.find_player_in_registry(clean_name)
+            if matched:
+                p_key, p_data = matched
+                if not self.is_stats_query(query) or "season_stats_2026" in p_data or "career_stats" in p_data:
                     return p_data
 
-        # If not cached or stale, attempt targeted live accredited lookup
-        clean_name = query
-        for remove_word in ["what are", "what is", "who is", "latest", "stats", "statistics", "nrl", r"\?", "'s", "the", "for"]:
-            clean_name = re.sub(rf"\b{remove_word}\b", "", clean_name, flags=re.I).strip()
-        
         if len(clean_name) < 3:
             if matched: return matched[1]
             return None
