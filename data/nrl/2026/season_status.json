@@ -1,0 +1,22 @@
+{
+  "year": 2026,
+  "current_phase": "Finals Series (Regular Season Concluded)",
+  "regular_season_rounds": 27,
+  "last_finalized_date": "2026-09-01",
+  "status_summary": {
+    "regular_rounds_status": "COMPLETED",
+    "active_phase": "Finals Series",
+    "brisbane_broncos": {
+      "ladder_position": 12,
+      "in_finals": false,
+      "season_status": "ELIMINATED / FINISHED",
+      "notes": "Dropped out of the top 8. Regular season completed; no more games left in 2026."
+    },
+    "queensland_maroons": {
+      "status": "Origin 2026 Series concluded under Billy Slater."
+    },
+    "png_chiefs": {
+      "status": "In official recruitment and infrastructure build phase for 2028 NRL entry."
+    }
+  }
+}

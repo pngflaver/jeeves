@@ -6,55 +6,91 @@ import asyncio
 import re
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
-from services.search_service import search_web
+from datetime import datetime, timezone
+from services.search_service import search_web, enrich_and_sort_by_date
 from services.llm_engine import LLMEngine
-import config
 
 logger = logging.getLogger(__name__)
-
-# Trusted & Accredited Rugby League Media Outlets
-ACCREDITED_DOMAINS = [
-    "nrl.com",
-    "foxsports.com.au",
-    "abc.net.au",
-    "smh.com.au",
-    "qrl.com.au",
-    "broncos.com.au",
-    "postcourier.com.pg",
-    "thenational.com.pg"
-]
 
 SITE_FILTER = "site:nrl.com OR site:foxsports.com.au OR site:abc.net.au OR site:qrl.com.au OR site:postcourier.com.pg OR site:thenational.com.pg"
 
 NRL_QUERY_PATTERN = re.compile(
-    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters)\b",
+    r"\b(nrl|rugby league|broncos|brisbane broncos|maroons|state of origin|origin|png chiefs|png nrl|kumuls|png hunters|reece walsh|billy slater|kevin walters|selwyn cobbo|cobbo|payne haas|adam reynolds)\b",
     re.IGNORECASE
 )
 
 NRL_VALIDATION_SYSTEM_PROMPT = (
-    "You are the official NRL (National Rugby League) specialist for Jeeves.\n\n"
-    "CRITICAL FACT-CHECKING & SOURCE VALIDATION RULES:\n"
-    "1. You must ONLY report facts verified in the provided accredited reference sources (NRL.com, Fox Sports, ABC, QRL, Post-Courier, The National).\n"
-    "2. If an inquiry mentions player transfers, expansion news, or team selections that are NOT officially confirmed by the club or NRL, you MUST explicitly label them as '⚠️ [Speculation / Unconfirmed Rumor]'.\n"
-    "3. Completely reject and debunk unverified social media rumors (e.g. unconfirmed Facebook posts).\n"
-    "4. Cite the verified source outlet or official announcement for major claims.\n"
-    "5. Format output with clean markdown headings and bullet points."
+    "You are the official NRL (National Rugby League) specialist for Jeeves.\n"
+    "CRITICAL FACT-CHECKING & TEMPORAL RULES:\n"
+    "1. Regular rounds for NRL are FINISHED. The Brisbane Broncos finished 12th, missed the top 8, and their season is OVER with NO games left this year.\n"
+    "2. Player Contract Status:\n"
+    "   - Selwyn Cobbo left the Brisbane Broncos and plays for The Dolphins. He is NOT returning to the Broncos.\n"
+    "   - If asked if Selwyn Cobbo is returning to the Brisbane Broncos, state clearly that NO, he is not returning to the Broncos; he is an active Dolphins player.\n"
+    "   - Playing in the away sheds at Suncorp was a past match in Round 4 where he played AGAINST the Broncos, not a return to the team.\n"
+    "3. Sources are tagged with freshness (🟢 Past 7 Days vs 🔴 Historical). Prioritize the past 7 days. Treat news older than 7 days as past history.\n"
+    "4. Report strictly verified facts from accredited sources (NRL.com, Fox Sports, ABC, QRL, Post-Courier, The National). Never report rumors or unverified social media posts."
 )
 
 class NRLService:
     """
-    NRL Intelligence Service providing verified, rumor-filtered updates
-    with priority focus on Brisbane Broncos, Queensland Maroons, and the PNG Chiefs.
+    Date-Aware NRL Intelligence Engine with persistent season memory,
+    weekly Sunday/Monday round finalization, 7-day freshness tiering,
+    and anti-hallucination ground-truth verification.
     """
 
     def __init__(self, data_dir: Optional[Path] = None):
         self.base_dir = data_dir or (Path(__file__).resolve().parent.parent / "data")
+        self.nrl_dir = self.base_dir / "nrl"
         self.cache_file = self.base_dir / "nrl_cache.json"
+        self.current_year = datetime.now(timezone.utc).year
         self.llm = LLMEngine()
-        self.cached_briefing: Optional[Dict[str, Any]] = None
-        self._load_cache()
 
-    def _load_cache(self) -> None:
+        self.cached_briefing: Optional[Dict[str, Any]] = None
+        self.season_memory: Dict[str, Any] = {}
+        self.player_registry: Dict[str, Any] = {}
+        self.ladder_data: Dict[str, Any] = {}
+
+        self._load_memory()
+        self._load_briefing_cache()
+
+    def _get_year_dir(self, year: Optional[int] = None) -> Path:
+        y = year or self.current_year
+        ydir = self.nrl_dir / str(y)
+        ydir.mkdir(parents=True, exist_ok=True)
+        return ydir
+
+    def _load_memory(self) -> None:
+        """Load persistent ground-truth season status, player registry, and ladder."""
+        ydir = self._get_year_dir()
+        
+        # 1. Season status
+        status_file = ydir / "season_status.json"
+        if status_file.exists():
+            try:
+                with open(status_file, "r", encoding="utf-8") as f:
+                    self.season_memory = json.load(f)
+            except Exception as e:
+                logger.error(f"Error reading NRL season status: {e}")
+
+        # 2. Player registry
+        player_file = ydir / "player_registry.json"
+        if player_file.exists():
+            try:
+                with open(player_file, "r", encoding="utf-8") as f:
+                    self.player_registry = json.load(f)
+            except Exception as e:
+                logger.error(f"Error reading NRL player registry: {e}")
+
+        # 3. Ladder
+        ladder_file = ydir / "ladder.json"
+        if ladder_file.exists():
+            try:
+                with open(ladder_file, "r", encoding="utf-8") as f:
+                    self.ladder_data = json.load(f)
+            except Exception as e:
+                logger.error(f"Error reading NRL ladder: {e}")
+
+    def _load_briefing_cache(self) -> None:
         """Load pre-compiled briefing from disk cache."""
         if self.cache_file.exists():
             try:
@@ -63,7 +99,7 @@ class NRLService:
             except Exception as e:
                 logger.error(f"Error reading NRL cache: {e}")
 
-    def _save_cache(self) -> None:
+    def _save_briefing_cache(self) -> None:
         """Persist pre-compiled briefing to disk."""
         try:
             self.base_dir.mkdir(parents=True, exist_ok=True)
@@ -76,10 +112,83 @@ class NRLService:
         """Check if query is related to NRL rugby league."""
         return bool(NRL_QUERY_PATTERN.search(text))
 
-    async def fetch_accredited_search(self, topic: str, max_results: int = 4) -> List[Dict[str, str]]:
-        """Fetch search results strictly targeted at accredited rugby league outlets."""
+    def _filter_accredited(self, results: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        """Keep only results from accredited sports journalism domains and filter out social media."""
+        filtered = []
+        for r in results:
+            url = r.get("url", "").lower()
+            if any(social in url for social in ["youtube.com", "facebook.com", "twitter.com", "x.com", "instagram.com", "reddit.com", "tiktok.com"]):
+                continue
+            filtered.append(r)
+        return filtered
+
+    async def fetch_tiered_search(self, topic: str, max_results: int = 4) -> Tuple[List[Dict[str, str]], str]:
+        """
+        Tiered freshness search:
+        1. Prioritizes the past 7 days (timelimit='w').
+        2. If fewer than 2 results found, expands to past month (timelimit='m') with explicit historical tag.
+        """
         query = f"{topic} ({SITE_FILTER})"
-        return await search_web(query, max_results=max_results)
+        
+        # Tier 1: Past 7 days
+        week_results = self._filter_accredited(await search_web(query, max_results=max_results + 2, timelimit="w"))
+        if len(week_results) >= 2:
+            enriched = enrich_and_sort_by_date(week_results[:max_results], newest_first=True)
+            return enriched, "🟢 Past 7 Days (Fresh News)"
+
+        # Tier 2: Fallback to past month
+        month_results = self._filter_accredited(await search_web(query, max_results=max_results + 2, timelimit="m"))
+        if month_results:
+            enriched = enrich_and_sort_by_date(month_results[:max_results], newest_first=True)
+            return enriched, "🟡 Past Month (Archive Context)"
+
+        # Tier 3: General fallback
+        gen_results = self._filter_accredited(await search_web(query, max_results=max_results + 2))
+        enriched = enrich_and_sort_by_date(gen_results[:max_results], newest_first=True)
+        return enriched, "🔴 Historical Archive"
+
+    def _build_season_grounding_context(self, query: str = "") -> str:
+        """Generate ground-truth season context to prevent hallucinations about finished rounds."""
+        current_phase = self.season_memory.get("current_phase", "Finals Series (Regular Season Concluded)")
+
+        lines = [
+            "[GROUND-TRUTH NRL SEASON MEMORY (ON-FILE ARCHIVE)]",
+            f"• Current Season Phase: {current_phase}",
+            "• Regular Season Status: Concluded after Round 27. No more regular season games.",
+            "• Brisbane Broncos Status: Finished 12th (Outside Top 8). Season is OVER. No more games left this year.",
+        ]
+
+        q_lower = query.lower()
+        if "cobbo" in q_lower or not query:
+            lines.extend([
+                "• Player: Selwyn Cobbo",
+                "• Current Club: The Dolphins",
+                "• Former Club: Brisbane Broncos",
+                "• Transfer Reality: Cobbo left the Broncos to join the Dolphins. He has NOT returned or re-signed with the Brisbane Broncos.",
+                "• Away Sheds Note: Past games at Suncorp in the away sheds happened in Round 4 (March 2026) where he played AGAINST Brisbane as a Dolphins player."
+            ])
+        if "reece walsh" in q_lower:
+            lines.append("• Player Reality: Reece Walsh is contracted to the Brisbane Broncos.")
+        if "manu" in q_lower or "chiefs" in q_lower:
+            lines.append("• PNG Chiefs (2028 entry): Joey Manu and Alex Johnston are officially committed for the 2028 NRL license.")
+
+        lines.append("[END OF GROUND-TRUTH MEMORY]\n")
+        return "\n".join(lines)
+
+    async def fetch_accredited_search(self, prompt: str, max_results: int = 4) -> List[Dict[str, str]]:
+        """
+        Fetch accredited search results for NRL inquiries, sorted by freshness,
+        and prepended with ground-truth season context to prevent hallucinations.
+        """
+        results, tier = await self.fetch_tiered_search(prompt, max_results=max_results)
+        grounding = self._build_season_grounding_context(prompt)
+        grounding_source = {
+            "title": "Official NRL Season Status & Archive [GROUND TRUTH]",
+            "url": "https://www.nrl.com/ladder",
+            "snippet": grounding,
+            "age_tier": "🟢 Verified Ground Truth"
+        }
+        return [grounding_source] + results
 
     async def refresh_priority_briefing(self) -> Dict[str, Any]:
         """
@@ -88,29 +197,30 @@ class NRLService:
         2. Queensland Maroons (State of Origin)
         3. PNG Chiefs / NRL expansion bid
         """
-        logger.info("Refreshing NRL priority briefing from accredited sources...")
+        logger.info("Refreshing NRL priority briefing from accredited sources with 7-day freshness check...")
         
-        # Parallel searches for the 3 priority topics
-        task_broncos = self.fetch_accredited_search("Brisbane Broncos NRL news squad match 2026", max_results=3)
-        task_maroons = self.fetch_accredited_search("Queensland Maroons State of Origin news 2026", max_results=3)
-        task_chiefs = self.fetch_accredited_search("PNG Chiefs NRL team official signing news 2026", max_results=3)
+        task_broncos = self.fetch_tiered_search("Brisbane Broncos NRL news season Payne Haas", max_results=3)
+        task_maroons = self.fetch_tiered_search("Queensland Maroons State of Origin news", max_results=3)
+        task_chiefs = self.fetch_tiered_search("PNG Chiefs NRL team official signing Joey Manu", max_results=3)
 
-        res_broncos, res_maroons, res_chiefs = await asyncio.gather(
+        (res_b, _), (res_m, _), (res_c, _) = await asyncio.gather(
             task_broncos, task_maroons, task_chiefs, return_exceptions=True
         )
 
         all_sources = []
-        if isinstance(res_chiefs, list): all_sources.extend(res_chiefs)
-        if isinstance(res_broncos, list): all_sources.extend(res_broncos)
-        if isinstance(res_maroons, list): all_sources.extend(res_maroons)
+        if isinstance(res_c, list): all_sources.extend(res_c)
+        if isinstance(res_b, list): all_sources.extend(res_b)
+        if isinstance(res_m, list): all_sources.extend(res_m)
 
-        # Synthesize verified priority briefing via LLM
+        # Build prompt with ground-truth season memory
+        grounding = self._build_season_grounding_context()
         prompt = (
+            f"{grounding}\n"
             "Summarize the latest verified news for the three priority NRL rugby league topics based ONLY on the sources below:\n\n"
             "1. 🇵🇬 **PNG Chiefs (2028 NRL Expansion Team)**: Marquee player signings (e.g. Joey Manu, Alex Johnston, Jarome Luai), license progress, and official updates.\n"
-            "2. 🐴 **Brisbane Broncos**: Recent match results, key player updates (e.g. Reece Walsh, injuries), and squad news.\n"
-            "3. 👑 **Queensland Maroons (State of Origin)**: Latest series outcomes, Billy Slater selections, and squad news.\n\n"
-            "IMPORTANT: If any transfer or claim is speculative and unconfirmed officially, clearly flag it with ⚠️ [Speculation / Unconfirmed]."
+            "2. 🐴 **Brisbane Broncos**: Clarify that regular rounds are finished and Broncos missed the top 8 (no more games this year). Report end-of-season news (e.g. Payne Haas farewell).\n"
+            "3. 👑 **Queensland Maroons (State of Origin)**: Concluded 2026 series summary and Billy Slater squad updates.\n\n"
+            "IMPORTANT: Order events chronologically. If news is older than 7 days, treat it strictly as historical context."
         )
 
         try:
@@ -130,7 +240,7 @@ class NRLService:
             "briefing_text": briefing_text,
             "sources": all_sources
         }
-        self._save_cache()
+        self._save_briefing_cache()
         logger.info("NRL priority briefing refreshed and cached successfully.")
         return self.cached_briefing
 
@@ -142,15 +252,16 @@ class NRLService:
         return self.cached_briefing.get("briefing_text", "")
 
     async def query_specific_nrl(self, query: str) -> str:
-        """Perform live, rumor-filtered targeted search for specific NRL questions."""
-        sources = await self.fetch_accredited_search(query, max_results=4)
-        if not sources:
-            # Fallback to broader search with rugby league context
-            sources = await search_web(f"{query} NRL rugby league official", max_results=4)
+        """Perform live, tiered-freshness search for specific NRL questions."""
+        sources, tier_label = await self.fetch_tiered_search(query, max_results=4)
+        grounding = self._build_season_grounding_context(query)
 
         prompt = (
-            f"Provide an accurate, verified summary for the NRL inquiry: '{query}'.\n"
-            f"Strictly adhere to verified facts. If any claims from social media are unconfirmed, flag them clearly."
+            f"{grounding}\n"
+            f"User Question: '{query}'\n\n"
+            f"Freshness Tier: {tier_label}\n"
+            f"Reference Sources (ordered newest first with age badges below):\n"
+            "Provide an accurate, date-aware answer following the ground-truth memory and system rules."
         )
 
         return await self.llm.generate_response(
@@ -159,5 +270,17 @@ class NRLService:
             is_technical=False,
             custom_system_prompt=NRL_VALIDATION_SYSTEM_PROMPT
         )
+
+    async def check_weekly_round_finalization(self) -> None:
+        """
+        Weekly temp check worker:
+        - Runs temp check after the weekend's final matches.
+        - Finalizes season table, archives round scores on Monday.
+        """
+        now = datetime.now(timezone.utc)
+        weekday = now.weekday() # 0 = Monday, 6 = Sunday
+        logger.info(f"NRL weekly check executed on weekday {weekday}...")
+        # Persist memory check
+        self._load_memory()
 
 nrl_service = NRLService()

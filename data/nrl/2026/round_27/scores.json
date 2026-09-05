@@ -1,0 +1,10 @@
+{
+  "year": 2026,
+  "round": 27,
+  "status": "FINAL / CONCLUDED",
+  "matches": [
+    {"home": "Brisbane Broncos", "home_score": 34, "away": "Canterbury Bulldogs", "away_score": 20, "notes": "Broncos won final game of season but missed top 8; Payne Haas farewell match."},
+    {"home": "Melbourne Storm", "home_score": 24, "away": "Brisbane Broncos", "away_score": 12, "notes": "Round 26 clash at Suncorp"},
+    {"home": "The Dolphins", "home_score": 28, "away": "Gold Coast Titans", "away_score": 14}
+  ]
+}

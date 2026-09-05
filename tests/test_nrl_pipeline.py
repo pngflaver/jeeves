@@ -25,12 +25,33 @@ async def test_nrl_pipeline():
     print("=" * 65)
     print("🏉 TEST 3: Accredited Tier-1 Search Formulation")
     print("=" * 65)
-    results = await nrl_service.fetch_accredited_search("PNG Chiefs NRL Joey Manu", max_results=2)
-    print(f"Retrieved {len(results)} accredited results:")
+    results, tier = await nrl_service.fetch_tiered_search("PNG Chiefs NRL Joey Manu", max_results=2)
+    print(f"Retrieved {len(results)} accredited results with tier: '{tier}':")
     for r in results:
-        print(f" - {r.get('title')} ({r.get('url')})")
+        print(f" - {r.get('age_tier', '')} {r.get('title')} ({r.get('url')})")
         assert any(d in r.get('url', '') for d in ["abc.net.au", "thenational.com.pg", "postcourier.com.pg", "nrl.com", "foxsports.com.au", "smh.com.au"])
-    print("\n✅ Verified search only returns accredited media outlets!\n")
+    print("\n✅ Verified search only returns accredited media outlets with age tiers!\n")
+
+    print("=" * 65)
+    print("🏉 TEST 4: Ground-Truth Season Memory & Cobbo Contract Status")
+    print("=" * 65)
+    grounding = nrl_service._build_season_grounding_context()
+    print(grounding)
+    assert "Brisbane Broncos Status: Finished 12th" in grounding
+    assert "Current Club: The Dolphins" in grounding
+    assert "Cobbo left the Broncos to join the Dolphins" in grounding
+    print("✅ Ground-truth season memory verified successfully!\n")
+
+    print("=" * 65)
+    print("🏉 TEST 5: fetch_accredited_search with Ground-Truth Injection")
+    print("=" * 65)
+    acc_results = await nrl_service.fetch_accredited_search("is selwyn cobbo returning to the broncos")
+    assert len(acc_results) > 0, "Expected search results"
+    assert "GROUND TRUTH" in acc_results[0]["title"], "Expected ground truth in first source"
+    assert "Current Club: The Dolphins" in acc_results[0]["snippet"]
+    print(f"✅ Injected Ground Truth + {len(acc_results)-1} accredited live search sources successfully!\n")
 
 if __name__ == "__main__":
+    from services.nrl_service import NRL_VALIDATION_SYSTEM_PROMPT
+    assert "CRITICAL FACT-CHECKING & TEMPORAL RULES" in NRL_VALIDATION_SYSTEM_PROMPT
     asyncio.run(test_nrl_pipeline())

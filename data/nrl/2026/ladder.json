@@ -1,0 +1,24 @@
+{
+  "year": 2026,
+  "round": 27,
+  "final_regular_season": true,
+  "standings": [
+    {"pos": 1, "team": "Melbourne Storm", "pts": 44, "status": "Finals - Major Semi"},
+    {"pos": 2, "team": "Penrith Panthers", "pts": 40, "status": "Finals - Major Semi"},
+    {"pos": 3, "team": "Sydney Roosters", "pts": 38, "status": "Finals - Qualifying"},
+    {"pos": 4, "team": "Cronulla Sharks", "pts": 38, "status": "Finals - Qualifying"},
+    {"pos": 5, "team": "North Queensland Cowboys", "pts": 36, "status": "Finals - Elimination"},
+    {"pos": 6, "team": "Canterbury Bulldogs", "pts": 34, "status": "Finals - Elimination"},
+    {"pos": 7, "team": "Manly Sea Eagles", "pts": 33, "status": "Finals - Elimination"},
+    {"pos": 8, "team": "Newcastle Knights", "pts": 32, "status": "Finals - Elimination"},
+    {"pos": 9, "team": "The Dolphins", "pts": 30, "status": "Eliminated"},
+    {"pos": 10, "team": "St George Illawarra Dragons", "pts": 28, "status": "Eliminated"},
+    {"pos": 11, "team": "Canberra Raiders", "pts": 28, "status": "Eliminated"},
+    {"pos": 12, "team": "Brisbane Broncos", "pts": 26, "status": "Eliminated (No finals, season ended)"},
+    {"pos": 13, "team": "New Zealand Warriors", "pts": 24, "status": "Eliminated"},
+    {"pos": 14, "team": "Gold Coast Titans", "pts": 22, "status": "Eliminated"},
+    {"pos": 15, "team": "Parramatta Eels", "pts": 20, "status": "Eliminated"},
+    {"pos": 16, "team": "South Sydney Rabbitohs", "pts": 20, "status": "Eliminated"},
+    {"pos": 17, "team": "Wests Tigers", "pts": 18, "status": "Eliminated"}
+  ]
+}

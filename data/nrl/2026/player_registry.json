@@ -1,0 +1,39 @@
+{
+  "players": {
+    "selwyn_cobbo": {
+      "full_name": "Selwyn Cobbo",
+      "current_club": "The Dolphins",
+      "previous_club": "Brisbane Broncos",
+      "transfer_details": "Signed with the Dolphins in June 2025; moved to the Dolphins for the 2026 season. Played against the Broncos in Round 4 at Suncorp Stadium in the away sheds.",
+      "status": "Active Dolphins Player. Has NOT returned or re-signed with the Brisbane Broncos.",
+      "last_verified": "2026-09-01"
+    },
+    "reece_walsh": {
+      "full_name": "Reece Walsh",
+      "current_club": "Brisbane Broncos",
+      "representative": "Queensland Maroons",
+      "status": "Contracted marquee fullback for Brisbane Broncos.",
+      "last_verified": "2026-09-01"
+    },
+    "joey_manu": {
+      "full_name": "Joey Manu",
+      "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
+      "previous_club": "Sydney Roosters",
+      "status": "Officially unveiled as marquee signing #007 for PNG Chiefs.",
+      "last_verified": "2026-08-24"
+    },
+    "alex_johnston": {
+      "full_name": "Alex Johnston",
+      "current_club": "PNG Chiefs (signed for 2028 NRL entry)",
+      "previous_club": "South Sydney Rabbitohs",
+      "status": "Committed as senior leader for PNG Chiefs 2028 entry.",
+      "last_verified": "2026-05-06"
+    },
+    "jarome_luai": {
+      "full_name": "Jarome Luai",
+      "current_club": "Wests Tigers / Signed with PNG Chiefs for 2028",
+      "status": "Signed marquee commitment to join PNG Chiefs for 2028 NRL entry.",
+      "last_verified": "2026-04-29"
+    }
+  }
+}
